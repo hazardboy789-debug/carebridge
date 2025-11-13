@@ -65,16 +65,9 @@ class User extends Authenticatable
     ];
 
     // Relationship: User has many attendances
-    public function attendances()
-    {
-        return $this->hasMany(Attendance::class, 'user_id', 'id');
-    }
 
     // Relationship: User has many staff permissions
-    public function staffPermissions()
-    {
-        return $this->hasMany(StaffPermission::class, 'user_id', 'id');
-    }
+
 
     /**
      * Check if user has a specific permission

@@ -12,7 +12,13 @@ use App\Livewire\Patient\Chat;
 use App\Livewire\Patient\Wallet;
 use App\Livewire\Patient\Pharmacy;
 use App\Livewire\Doctor\DoctorDashboard;
-
+use App\Livewire\Landing\IndexPage;
+use App\Livewire\Landing\AboutPage;
+use App\Livewire\Landing\ServicesPage;
+use App\Livewire\Landing\DoctorPage;
+use App\Livewire\Landing\ContactPage;
+use App\Livewire\Landing\ApointmentPage;
+use App\Http\Controllers\RegisterController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -25,7 +31,19 @@ use App\Livewire\Doctor\DoctorDashboard;
 */
 
 // Public routes
-Route::get('/', CustomLogin::class)->name('welcome')->middleware('guest');
+Route::get('/login', CustomLogin::class)->name('login')->middleware('guest');
+Route::post('/register', [RegisterController::class, 'register'])->name('register')->middleware('guest');
+
+//Landing page routes
+Route::get('/', IndexPage::class)->name('welcome');
+Route::get('/about', AboutPage::class)->name('about')->middleware('guest');
+Route::get('/services', ServicesPage::class)->name('services')->middleware('guest');
+Route::get('/doctors', DoctorPage::class)->name('doctors')->middleware('guest');
+Route::get('/contact', ContactPage::class)->name('contact')->middleware('guest');
+Route::get('/appointment', ApointmentPage::class)->name('appointment')->middleware('guest');
+
+
+
 
 // Custom logout route
 Route::post('/logout', function (Request $request) {
@@ -36,7 +54,7 @@ Route::post('/logout', function (Request $request) {
 })->name('logout');
 
 // Routes that require authentication
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
+    Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
     
     // Profile route - accessible to all authenticated users
     Route::get('/user/profile', function () {

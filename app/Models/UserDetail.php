@@ -17,27 +17,13 @@ class UserDetail extends Model
         'user_id',
         'dob',
         'age',
-        'nic_num',
         'address',
-        'work_role',
-        'work_type',
-        'department',
         'gender',
-        'join_date',
-        'fingerprint_id',
-        'allowance',
-        'basic_salary',
         'user_image',
         'description',
         'status',
     ];
 
-    // Cast JSON fields
-    protected $casts = [
-        'allowance' => 'array',
-        'dob' => 'date',
-        'join_date' => 'date',
-    ];
 
     // Relationship: UserDetail belongs to a User
     public function user()
@@ -46,8 +32,5 @@ class UserDetail extends Model
     }
 
     // Relationship: UserDetail can have many attendances
-    public function attendances()
-    {
-        return $this->hasMany(Attendance::class, 'user_id', 'user_id');
-    }
+
 }

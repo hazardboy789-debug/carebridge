@@ -149,10 +149,14 @@
                         class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary">
                         <span class="material-symbols-outlined text-2xl">notifications</span>
                     </button>
-                    <button
-                        class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary">
-                        <span class="material-symbols-outlined text-2xl">help_outline</span>
-                    </button>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                            class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary"
+                            aria-label="Logout">
+                            <span class="material-symbols-outlined text-2xl">logout</span>
+                        </button>
+                    </form>
                     <button
                         class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary">
                         <span class="material-symbols-outlined text-2xl">settings</span>
