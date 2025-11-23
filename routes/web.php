@@ -11,6 +11,16 @@ use App\Livewire\Patient\Appointments  ;
 use App\Livewire\Patient\Chat;
 use App\Livewire\Patient\Wallet;
 use App\Livewire\Patient\Pharmacy;
+
+//admins 
+use App\Livewire\Admin\Doctors as AdminDoctor;
+use App\Livewire\Admin\Patients as AdminPatient;
+use App\Livewire\Admin\Pharmacy as AdminPharmacy;
+use App\Livewire\Admin\Transactions as AdminTransaction;
+use App\Livewire\Admin\Appointments as AdminAppointments;
+
+
+
 use App\Livewire\Doctor\DoctorDashboard;
 use App\Livewire\Landing\IndexPage;
 use App\Livewire\Landing\AboutPage;
@@ -19,6 +29,7 @@ use App\Livewire\Landing\DoctorPage;
 use App\Livewire\Landing\ContactPage;
 use App\Livewire\Landing\ApointmentPage;
 use App\Http\Controllers\RegisterController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -68,6 +79,12 @@ Route::post('/logout', function (Request $request) {
     // !! Admin routes
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
+        Route::get('/patients', AdminPatient::class)->name('patients');
+        Route::get('/doctors', AdminDoctor::class)->name('doctors');
+        Route::get('/pharmacy', AdminPharmacy::class)->name('pharmacy');
+        Route::get('/transaction', AdminTransaction::class)->name('transactions');
+        Route::get('/appointments', AdminAppointments::class)->name('appointments');
+
 
     });
    

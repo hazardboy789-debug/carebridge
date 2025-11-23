@@ -1,224 +1,170 @@
-<!-- Page Content -->
-<div class="flex-1 p-8">
-                <div class="flex flex-col gap-8">
-                    <!-- PageHeading & ButtonGroup -->
-                    <div class="flex flex-wrap items-center justify-between gap-4">
-                        <div class="flex flex-col gap-1">
-                            <p
-                                class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold tracking-tight">
-                                Good Morning, Maria</p>
-                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal">
-                                Here's your summary for today.</p>
-                        </div>
-                        <div class="flex flex-1 sm:flex-initial gap-3 flex-wrap justify-start">
-                            <button
-                                class="flex min-w-[84px] items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary text-white text-sm font-bold gap-2">
-                                <span class="material-symbols-outlined">playlist_add_check</span>
-                                <span class="truncate">Start Symptom Check</span>
-                            </button>
-                            <button
-                                class="flex min-w-[84px] items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-card-light dark:bg-card-dark text-text-light-primary dark:text-text-dark-primary border border-border-light dark:border-border-dark text-sm font-bold hover:bg-gray-50 dark:hover:bg-slate-700 gap-2">
-                                <span class="material-symbols-outlined">video_call</span>
-                                <span class="truncate">Consult Doctor Now</span>
-                            </button>
-                        </div>
+<div>
+    <div class="flex-1 p-8">
+    <div class="flex flex-col gap-8">
+        <!-- Page Heading -->
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-col gap-1">
+                <p class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold tracking-tight">
+                    Admin Dashboard
+                </p>
+                <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal">
+                    Overview of your healthcare platform.
+                </p>
+            </div>
+            <div class="flex flex-1 sm:flex-initial gap-3 flex-wrap justify-start">
+                <button class="flex min-w-[84px] items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary text-white text-sm font-bold gap-2">
+                    <span class="material-symbols-outlined">download</span>
+                    <span class="truncate">Export Report</span>
+                </button>
+                <button class="flex min-w-[84px] items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-card-light dark:bg-card-dark text-text-light-primary dark:text-text-dark-primary border border-border-light dark:border-border-dark text-sm font-bold hover:bg-gray-50 dark:hover:bg-slate-700 gap-2">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span class="truncate">Settings</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Patients Card -->
+            <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center justify-center rounded-full size-12 bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+                        <span class="material-symbols-outlined">personal_injury</span>
                     </div>
-                    <!-- Dashboard Cards Grid -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <!-- Left Column -->
-                        <div class="lg:col-span-2 flex flex-col gap-8">
-                            <!-- Upcoming Appointments -->
-                            <div
-                                class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-                                <div class="flex items-center justify-between mb-4">
-                                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold">
-                                        Your Upcoming Appointments</h2>
-                                    <a class="text-primary text-sm font-bold hover:underline" href="#">View All</a>
-                                </div>
-                                <div class="flex flex-col gap-4">
-                                    <div
-                                        class="flex items-center gap-4 p-4 rounded-lg bg-background-light dark:bg-background-dark">
-                                        <div
-                                            class="flex flex-col items-center justify-center bg-primary/10 dark:bg-primary/20 text-primary w-16 h-16 rounded-lg p-2">
-                                            <span class="text-sm font-bold">OCT</span>
-                                            <span class="text-2xl font-black">28</span>
-                                        </div>
-                                        <div class="flex-1">
-                                            <p
-                                                class="text-text-light-primary dark:text-text-dark-primary font-semibold">
-                                                Dr. Evelyn Reed</p>
-                                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
-                                                Oncology Department</p>
-                                        </div>
-                                        <div class="text-right">
-                                            <p
-                                                class="text-text-light-primary dark:text-text-dark-primary font-semibold text-sm">
-                                                10:30 AM</p>
-                                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
-                                                St. Jude's Hospital</p>
-                                        </div>
-                                    </div>
-                                    <div
-                                        class="flex items-center gap-4 p-4 rounded-lg bg-background-light dark:bg-background-dark">
-                                        <div
-                                            class="flex flex-col items-center justify-center bg-gray-100 dark:bg-slate-700 text-text-light-primary dark:text-text-dark-primary w-16 h-16 rounded-lg p-2">
-                                            <span class="text-sm font-bold">NOV</span>
-                                            <span class="text-2xl font-black">05</span>
-                                        </div>
-                                        <div class="flex-1">
-                                            <p
-                                                class="text-text-light-primary dark:text-text-dark-primary font-semibold">
-                                                Radiology Scan</p>
-                                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
-                                                Imaging Center</p>
-                                        </div>
-                                        <div class="text-right">
-                                            <p
-                                                class="text-text-light-primary dark:text-text-dark-primary font-semibold text-sm">
-                                                02:00 PM</p>
-                                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
-                                                City Health Clinic</p>
-                                        </div>
-                                    </div>
-                                    <div
-                                        class="flex items-center gap-4 p-4 rounded-lg bg-background-light dark:bg-background-dark">
-                                        <div
-                                            class="flex flex-col items-center justify-center bg-gray-100 dark:bg-slate-700 text-text-light-primary dark:text-text-dark-primary w-16 h-16 rounded-lg p-2">
-                                            <span class="text-sm font-bold">NOV</span>
-                                            <span class="text-2xl font-black">12</span>
-                                        </div>
-                                        <div class="flex-1">
-                                            <p
-                                                class="text-text-light-primary dark:text-text-dark-primary font-semibold">
-                                                Dr. Ben Carter</p>
-                                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
-                                                Nutritionist</p>
-                                        </div>
-                                        <div class="text-right">
-                                            <p
-                                                class="text-text-light-primary dark:text-text-dark-primary font-semibold text-sm">
-                                                11:00 AM</p>
-                                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
-                                                Virtual Consultation</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Health Summary -->
-                            <div
-                                class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-                                <div class="flex items-center justify-between mb-4">
-                                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold">
-                                        Your Health at a Glance</h2>
-                                    <a class="text-primary text-sm font-bold hover:underline" href="#">View Full
-                                        Record</a>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div class="p-4 rounded-lg bg-background-light dark:bg-background-dark">
-                                        <div class="flex items-center gap-3 mb-2">
-                                            <span class="material-symbols-outlined text-primary">bloodtype</span>
-                                            <h3
-                                                class="text-text-light-primary dark:text-text-dark-primary font-semibold">
-                                                White Blood Cell</h3>
-                                        </div>
-                                        <p
-                                            class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold">
-                                            4.8 <span
-                                                class="text-base font-normal text-text-light-secondary dark:text-text-dark-secondary">x10⁹/L</span>
-                                        </p>
-                                        <div class="flex items-center gap-1 mt-1">
-                                            <span
-                                                class="material-symbols-outlined text-sm text-green-500">arrow_upward</span>
-                                            <p class="text-sm text-text-light-secondary dark:text-text-dark-secondary">
-                                                Stable from last test</p>
-                                        </div>
-                                    </div>
-                                    <div class="p-4 rounded-lg bg-background-light dark:bg-background-dark">
-                                        <div class="flex items-center gap-3 mb-2">
-                                            <span class="material-symbols-outlined text-primary">scale</span>
-                                            <h3
-                                                class="text-text-light-primary dark:text-text-dark-primary font-semibold">
-                                                Weight Trend</h3>
-                                        </div>
-                                        <p
-                                            class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold">
-                                            145 <span
-                                                class="text-base font-normal text-text-light-secondary dark:text-text-dark-secondary">lbs</span>
-                                        </p>
-                                        <div class="flex items-center gap-1 mt-1">
-                                            <span
-                                                class="material-symbols-outlined text-sm text-red-500">arrow_downward</span>
-                                            <p class="text-sm text-text-light-secondary dark:text-text-dark-secondary">
-                                                -2 lbs from last week</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <span class="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">
+                        +12%
+                    </span>
+                </div>
+                <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm mb-1">Total Patients</p>
+                <p class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold">2,847</p>
+                <div class="flex items-center gap-1 mt-2">
+                    <span class="material-symbols-outlined text-sm text-green-500">arrow_upward</span>
+                    <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">305 new this month</p>
+                </div>
+            </div>
+
+            <!-- Doctors Card -->
+            <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center justify-center rounded-full size-12 bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400">
+                        <span class="material-symbols-outlined">stethoscope</span>
+                    </div>
+                    <span class="bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 text-xs px-2 py-1 rounded-full">
+                        +5%
+                    </span>
+                </div>
+                <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm mb-1">Active Doctors</p>
+                <p class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold">156</p>
+                <div class="flex items-center gap-1 mt-2">
+                    <span class="material-symbols-outlined text-sm text-green-500">arrow_upward</span>
+                    <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">8 new this month</p>
+                </div>
+            </div>
+
+            <!-- Appointments Card -->
+            <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center justify-center rounded-full size-12 bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
+                        <span class="material-symbols-outlined">calendar_month</span>
+                    </div>
+                    <span class="bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300 text-xs px-2 py-1 rounded-full">
+                        Today
+                    </span>
+                </div>
+                <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm mb-1">Today's Appointments</p>
+                <p class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold">47</p>
+                <div class="flex items-center gap-1 mt-2">
+                    <span class="material-symbols-outlined text-sm text-green-500">schedule</span>
+                    <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">12 upcoming</p>
+                </div>
+            </div>
+
+            <!-- Transactions Card -->
+            <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center justify-center rounded-full size-12 bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400">
+                        <span class="material-symbols-outlined">account_balance_wallet</span>
+                    </div>
+                    <span class="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">
+                        +18%
+                    </span>
+                </div>
+                <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm mb-1">Total Revenue</p>
+                <p class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold">$24.5K</p>
+                <div class="flex items-center gap-1 mt-2">
+                    <span class="material-symbols-outlined text-sm text-green-500">arrow_upward</span>
+                    <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">$3.7k this month</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts and Additional Data -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Recent Activity -->
+            <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold">
+                        Recent Activity
+                    </h2>
+                    <a class="text-primary text-sm font-bold hover:underline" href="#">View All</a>
+                </div>
+                <div class="flex flex-col gap-4">
+                    @for($i = 0; $i < 4; $i++)
+                    <div class="flex items-center gap-3 p-3 rounded-lg bg-background-light dark:bg-background-dark">
+                        <div class="flex items-center justify-center rounded-full size-10 bg-primary/10 dark:bg-primary/20 text-primary">
+                            <span class="material-symbols-outlined">person_add</span>
                         </div>
-                        <!-- Right Column -->
-                        <div class="lg:col-span-1 flex flex-col gap-8">
-                            <!-- Wallet -->
-                            <div
-                                class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-                                <h2 class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold mb-1">
-                                    My Wallet</h2>
-                                <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm mb-4">
-                                    Available balance for services</p>
-                                <div class="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg text-center mb-4">
-                                    <p class="text-primary text-4xl font-black tracking-tight">$245.50</p>
-                                </div>
-                                <div class="flex flex-col gap-3">
-                                    <button
-                                        class="flex w-full items-center justify-center rounded-lg h-11 px-4 bg-primary text-white text-sm font-bold">Add
-                                        Funds</button>
-                                    <button
-                                        class="flex w-full items-center justify-center rounded-lg h-11 px-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light-primary dark:text-text-dark-primary text-sm font-bold hover:bg-gray-50 dark:hover:bg-slate-700">View
-                                        Transactions</button>
-                                </div>
-                            </div>
-                            <!-- Doctor on Call -->
-                            <div
-                                class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-                                <h2 class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold mb-4">
-                                    Your Care Team</h2>
-                                <div class="flex flex-col gap-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12"
-                                            data-alt="Profile picture of Dr. Evelyn Reed"
-                                            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAPyLJw3e-STCG-Z_O80E32_v6PZpysy71S1oSZahWCaDPPQmvcgI2t0gUj2Zrs9mZc37Qkvjq-vINlPqEmVzUN_TA36pmlmevEoz2tgIGY5cI3MriGJn0lQxDKPb_26F2nPz6-be5413GVSx6e1MTVRDeDgpC9AXz4sPxw53iRSaKl4L-kNXkJUbxSJl3uRQ0yHwUqig5sZkkhDpfh1pOixCpqMsnux06f4TcFD80t8P87irVbR-BWMQobLI6VPC5xNX2hdY2Z0w");'>
-                                        </div>
-                                        <div class="flex-1">
-                                            <p
-                                                class="text-text-light-primary dark:text-text-dark-primary font-semibold">
-                                                Dr. Evelyn Reed</p>
-                                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
-                                                Oncologist</p>
-                                        </div>
-                                        <button
-                                            class="flex items-center justify-center rounded-full size-9 bg-primary/10 dark:bg-primary/20 text-primary">
-                                            <span class="material-symbols-outlined text-xl">chat_bubble</span>
-                                        </button>
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12"
-                                            data-alt="Profile picture of Dr. Ben Carter"
-                                            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDAQUwLGdNs9hFBr7Crk63XUevh0oH0yu70j6uY6brdBiL6vmeMwyl36Cz1MGlLFwzec0gGNU-9ILfhdsAES5IqHY1mWfqMOcA7BdbNel_9lFjpNv-YRWq4BMf39S_BZwekMxylhHjfkNyL_haZmFEcc8iGck2biPs7jjk2GLwrfVO07jHkOqJY2vyJfQIfcNqvvEQPKNofVJDagnT3ZTbOpRaFhKa4C3TfdEFKMKVjE-dnhw-cFWlM4EURQc4gRmc3td5PGA6tpQ");'>
-                                        </div>
-                                        <div class="flex-1">
-                                            <p
-                                                class="text-text-light-primary dark:text-text-dark-primary font-semibold">
-                                                Dr. Ben Carter</p>
-                                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
-                                                Nutritionist</p>
-                                        </div>
-                                        <button
-                                            class="flex items-center justify-center rounded-full size-9 bg-primary/10 dark:bg-primary/20 text-primary">
-                                            <span class="material-symbols-outlined text-xl">chat_bubble</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="flex-1">
+                            <p class="text-text-light-primary dark:text-text-dark-primary font-semibold text-sm">
+                                New patient registration
+                            </p>
+                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs">
+                                John Doe registered as new patient
+                            </p>
                         </div>
+                        <span class="text-text-light-secondary dark:text-text-dark-secondary text-xs">2 hours ago</span>
+                    </div>
+                    @endfor
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
+                <h2 class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold mb-6">
+                    System Status
+                </h2>
+                <div class="flex flex-col gap-4">
+                    <div class="flex items-center justify-between p-3 rounded-lg bg-background-light dark:bg-background-dark">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-green-500">check_circle</span>
+                            <span class="text-text-light-primary dark:text-text-dark-primary text-sm">Database</span>
+                        </div>
+                        <span class="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">Operational</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded-lg bg-background-light dark:bg-background-dark">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-green-500">check_circle</span>
+                            <span class="text-text-light-primary dark:text-text-dark-primary text-sm">API Services</span>
+                        </div>
+                        <span class="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">Operational</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded-lg bg-background-light dark:bg-background-dark">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-yellow-500">warning</span>
+                            <span class="text-text-light-primary dark:text-text-dark-primary text-sm">Payment Gateway</span>
+                        </div>
+                        <span class="bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300 text-xs px-2 py-1 rounded-full">Maintenance</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded-lg bg-background-light dark:bg-background-dark">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-green-500">check_circle</span>
+                            <span class="text-text-light-primary dark:text-text-dark-primary text-sm">Email Services</span>
+                        </div>
+                        <span class="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">Operational</span>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
 </div>

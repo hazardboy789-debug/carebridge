@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Patient Dashboard</title>
+    <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
@@ -60,68 +60,52 @@
                                 fill="currentColor" fill-rule="evenodd"></path>
                         </svg>
                     </div>
-                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold">Care-Path</h2>
+                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold">Care-Path Admin</h2>
                 </div>
                 <div class="flex flex-col gap-4 mt-6 grow">
                     <div class="flex flex-col gap-2">
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 dark:bg-primary/20"
-                            href="#">
+                            href="{{ route('admin.dashboard') }}">
                             <span class="material-symbols-outlined text-primary text-2xl">dashboard</span>
                             <p class="text-primary text-sm font-bold">Dashboard</p>
                         </a>
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 group"
-                            href="#">
-                            <span
-                                class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">playlist_add_check</span>
-                            <p
-                                class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">
-                                Symptom Checker</p>
+                            href="{{ route('admin.patients') }}">
+                            <span class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">personal_injury</span>
+                            <p class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">Patients</p>
                         </a>
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 group"
-                            href="#">
-                            <span
-                                class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">calendar_month</span>
-                            <p
-                                class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">
-                                Appointments</p>
+                            href="{{ route('admin.doctors') }}">
+                            <span class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">stethoscope</span>
+                            <p class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">Doctors</p>
                         </a>
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 group"
-                            href="#">
-                            <span
-                                class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">chat</span>
-                            <p
-                                class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">
-                                Chat</p>
+                            href="{{ route('admin.appointments') }}">
+                            <span class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">calendar_month</span>
+                            <p class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">Appointments</p>
                         </a>
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 group"
-                            href="#">
-                            <span
-                                class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">account_balance_wallet</span>
-                            <p
-                                class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">
-                                Wallet</p>
+                            href="{{ route('admin.transactions') }}">
+                            <span class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">account_balance_wallet</span>
+                            <p class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">Transactions</p>
                         </a>
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 group"
-                            href="#">
-                            <span
-                                class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">pill</span>
-                            <p
-                                class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">
-                                Pharmacy</p>
+                            href="{{ route('admin.pharmacy') }}">
+                            <span class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">local_pharmacy</span>
+                            <p class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">Pharmacy</p>
                         </a>
+                       
                     </div>
                 </div>
                 <div class="flex flex-col gap-1">
                     <div class="flex items-center gap-3 px-3 py-4 border-t border-border-light dark:border-border-dark">
                         <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
-                            data-alt="Profile picture of Maria Garcia"
+                            data-alt="Profile picture of Admin"
                             style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBmoJ7zWljb-6oG8m3ruqHc_HJBrlj0SL-YJrRySRqzdiEOLUaC4dCutjq-IATLBJ9HMmYNf6wX0XVbROieBzLVfjzSdSqaXKckizUENhpVyCypmVQUW0n8qlyonn-6WFZ9tlfdZUcG8_apNL-YoCv5zsAIynHVuEwEdKaqpF_NkIePpngu2hMYNT7waE7Ws2B6J9kJxzmcYAicG_trQe760nCkKe6aJ8ZxBPc_6M_6D1J723zypAp2MjZW60fwqZoC_t-dxgyb0A");'>
                         </div>
                         <div class="flex flex-col">
-                            <h1 class="text-text-light-primary dark:text-text-dark-primary text-sm font-semibold">Maria
-                                Garcia</h1>
-                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs">Patient ID:
-                                789-123-456</p>
+                            <h1 class="text-text-light-primary dark:text-text-dark-primary text-sm font-semibold">Admin User</h1>
+                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs">Administrator</p>
                         </div>
                     </div>
                 </div>
@@ -137,10 +121,14 @@
                         class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary">
                         <span class="material-symbols-outlined text-2xl">notifications</span>
                     </button>
-                    <button
-                        class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary">
-                        <span class="material-symbols-outlined text-2xl">help_outline</span>
-                    </button>
+                     <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                            class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary"
+                            aria-label="Logout">
+                            <span class="material-symbols-outlined text-2xl">logout</span>
+                        </button>
+                    </form>
                     <button
                         class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary">
                         <span class="material-symbols-outlined text-2xl">settings</span>
