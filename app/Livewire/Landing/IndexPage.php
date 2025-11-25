@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Landing;
 
+
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\DB;

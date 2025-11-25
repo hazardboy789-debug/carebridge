@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Patient;
+namespace App\Livewire\Doctor;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -10,13 +10,13 @@ use App\Models\ChatMessage;
 use App\Models\Appointment;
 use Illuminate\Support\Facades\Log;
 
-#[Layout('components.layouts.patient')]
+#[Layout('components.layouts.doctor')]
 class Chat extends Component
 {
     use WithFileUploads;
 
-    public $doctors = [];
-    public $selectedDoctor = null;
+    public $patients = [];
+    public $selectedPatient = null;
     public $messages = [];
     public $newMessage = '';
     public $fileUpload;
@@ -29,8 +29,8 @@ class Chat extends Component
     public function loadRecentChats()
     {
         try {
-            // Get doctors who have recent conversations with this patient
-            $recentChatDoctorIds = ChatMessage::where('sender_id', auth()->id())
+            // Get patients who have recent conversations with this doctor
+            $recentChatPatientIds = ChatMessage::where('sender_id', auth()->id())
                 ->orWhere('receiver_id', auth()->id())
                 ->select('sender_id', 'receiver_id')
                 ->get()
@@ -39,26 +39,26 @@ class Chat extends Component
                 })
                 ->unique()
                 ->filter(function ($userId) {
-                    return $userId !== auth()->id(); // Exclude current patient
+                    return $userId !== auth()->id();
                 });
 
-            // Also include doctors with appointments but no messages yet
-            $appointmentDoctorIds = Appointment::where('patient_id', auth()->id())
-                ->whereNotNull('doctor_id')
-                ->pluck('doctor_id')
+            // Also include patients with appointments but no messages yet
+            $appointmentPatientIds = Appointment::where('doctor_id', auth()->id())
+                ->whereNotNull('patient_id')
+                ->pluck('patient_id')
                 ->unique();
 
-            // Combine both and get unique doctor IDs
-            $allDoctorIds = $recentChatDoctorIds->merge($appointmentDoctorIds)->unique();
+            // Combine both and get unique patient IDs
+            $allPatientIds = $recentChatPatientIds->merge($appointmentPatientIds)->unique();
 
-            if (empty($allDoctorIds)) {
-                $this->doctors = [];
+            if (empty($allPatientIds)) {
+                $this->patients = [];
                 return;
             }
 
-            $users = User::whereIn('id', $allDoctorIds)->get();
+            $users = User::whereIn('id', $allPatientIds)->get();
 
-            $this->doctors = $users->map(function($user) {
+            $this->patients = $users->map(function($user) {
                 $lastMessage = $this->getLastMessage($user->id);
                 $unreadCount = $this->getUnreadCount($user->id);
 
@@ -73,29 +73,38 @@ class Chat extends Component
             })->sortByDesc('last_activity')->values()->toArray();
 
         } catch (\Exception $e) {
-            Log::error('Error loading recent chats for patient: ' . $e->getMessage());
-            $this->doctors = [];
+            Log::error('Error loading recent chats for doctor: ' . $e->getMessage());
+            $this->patients = [];
         }
     }
 
-    public function selectDoctor($doctorId)
+    // ADD THIS METHOD FOR AUTO-REFRESH
+    public function pollMessages()
+    {
+        if ($this->selectedPatient) {
+            $this->loadMessages();
+            $this->loadRecentChats();
+        }
+    }
+
+    public function selectPatient($patientId)
     {
         try {
-            $this->selectedDoctor = User::find($doctorId);
+            $this->selectedPatient = User::find($patientId);
             
-            if ($this->selectedDoctor) {
+            if ($this->selectedPatient) {
                 $this->loadMessages();
                 $this->markMessagesAsRead();
                 $this->dispatch('messageSent');
             }
         } catch (\Exception $e) {
-            Log::error('Error selecting doctor: ' . $e->getMessage());
+            Log::error('Error selecting patient: ' . $e->getMessage());
         }
     }
 
     public function loadMessages()
     {
-        if (!$this->selectedDoctor) {
+        if (!$this->selectedPatient) {
             $this->messages = [];
             return;
         }
@@ -103,17 +112,17 @@ class Chat extends Component
         try {
             $this->messages = ChatMessage::where(function ($query) {
                     $query->where('sender_id', auth()->id())
-                          ->where('receiver_id', $this->selectedDoctor->id);
+                          ->where('receiver_id', $this->selectedPatient->id);
                 })
                 ->orWhere(function ($query) {
-                    $query->where('sender_id', $this->selectedDoctor->id)
+                    $query->where('sender_id', $this->selectedPatient->id)
                           ->where('receiver_id', auth()->id());
                 })
                 ->orderBy('created_at', 'asc')
                 ->get();
 
         } catch (\Exception $e) {
-            Log::error('Error loading messages for patient: ' . $e->getMessage());
+            Log::error('Error loading messages for doctor: ' . $e->getMessage());
             $this->messages = [];
         }
     }
@@ -125,15 +134,15 @@ class Chat extends Component
             'fileUpload' => 'nullable|file|max:10240',
         ]);
 
-        if (!$this->selectedDoctor) {
-            session()->flash('error', 'Please select a doctor first.');
+        if (!$this->selectedPatient) {
+            session()->flash('error', 'Please select a patient first.');
             return;
         }
 
         try {
             $messageData = [
                 'sender_id' => auth()->id(),
-                'receiver_id' => $this->selectedDoctor->id,
+                'receiver_id' => $this->selectedPatient->id,
             ];
 
             if ($this->fileUpload) {
@@ -151,13 +160,13 @@ class Chat extends Component
             $this->newMessage = '';
             $this->fileUpload = null;
             $this->loadMessages();
-            $this->loadRecentChats(); // Refresh the recent chats list
+            $this->loadRecentChats();
             $this->dispatch('messageSent');
 
             session()->flash('success', 'Message sent successfully!');
 
         } catch (\Exception $e) {
-            Log::error('Patient chat message send error: ' . $e->getMessage());
+            Log::error('Doctor chat message send error: ' . $e->getMessage());
             session()->flash('error', 'Failed to send message. Please try again.');
         }
     }
@@ -175,32 +184,32 @@ class Chat extends Component
 
     public function markMessagesAsRead()
     {
-        if ($this->selectedDoctor) {
-            ChatMessage::where('sender_id', $this->selectedDoctor->id)
+        if ($this->selectedPatient) {
+            ChatMessage::where('sender_id', $this->selectedPatient->id)
                 ->where('receiver_id', auth()->id())
                 ->whereNull('read_at')
                 ->update(['read_at' => now()]);
                 
-            $this->loadRecentChats(); // Refresh to update unread counts
+            $this->loadRecentChats();
         }
     }
 
-    public function getUnreadCount($doctorId)
+    public function getUnreadCount($patientId)
     {
-        return ChatMessage::where('sender_id', $doctorId)
+        return ChatMessage::where('sender_id', $patientId)
             ->where('receiver_id', auth()->id())
             ->whereNull('read_at')
             ->count();
     }
 
-    public function getLastMessage($doctorId)
+    public function getLastMessage($patientId)
     {
-        return ChatMessage::where(function ($query) use ($doctorId) {
+        return ChatMessage::where(function ($query) use ($patientId) {
                 $query->where('sender_id', auth()->id())
-                      ->where('receiver_id', $doctorId);
+                      ->where('receiver_id', $patientId);
             })
-            ->orWhere(function ($query) use ($doctorId) {
-                $query->where('sender_id', $doctorId)
+            ->orWhere(function ($query) use ($patientId) {
+                $query->where('sender_id', $patientId)
                       ->where('receiver_id', auth()->id());
             })
             ->orderBy('created_at', 'desc')
@@ -216,6 +225,7 @@ class Chat extends Component
 
     public function render()
     {
-        return view('livewire.patient.chat');
+        return view('livewire.doctor.chat')
+            ->layout('components.layouts.doctor');
     }
 }

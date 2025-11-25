@@ -51,7 +51,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border-light dark:divide-border-dark">
-                                @for($i = 0; $i < 6; $i++)
+                                @foreach($appointments as $appointment)
                                 <tr class="hover:bg-background-light dark:hover:bg-background-dark">
                                     <td class="py-3 px-4">
                                         <div class="flex items-center gap-3">

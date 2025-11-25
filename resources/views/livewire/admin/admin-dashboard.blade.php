@@ -1,170 +1,133 @@
-<div>
-    <div class="flex-1 p-8">
-    <div class="flex flex-col gap-8">
-        <!-- Page Heading -->
-        <div class="flex flex-wrap items-center justify-between gap-4">
-            <div class="flex flex-col gap-1">
-                <p class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold tracking-tight">
-                    Admin Dashboard
-                </p>
-                <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal">
-                    Overview of your healthcare platform.
-                </p>
-            </div>
-            <div class="flex flex-1 sm:flex-initial gap-3 flex-wrap justify-start">
-                <button class="flex min-w-[84px] items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary text-white text-sm font-bold gap-2">
-                    <span class="material-symbols-outlined">download</span>
-                    <span class="truncate">Export Report</span>
-                </button>
-                <button class="flex min-w-[84px] items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-card-light dark:bg-card-dark text-text-light-primary dark:text-text-dark-primary border border-border-light dark:border-border-dark text-sm font-bold hover:bg-gray-50 dark:hover:bg-slate-700 gap-2">
-                    <span class="material-symbols-outlined">settings</span>
-                    <span class="truncate">Settings</span>
-                </button>
-            </div>
+<div class="p-6">
+    <h1 class="text-2xl font-semibold mb-4">Admin Dashboard</h1>
+
+    <!-- Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="p-4 bg-white rounded-lg shadow-sm">
+            <div class="text-sm text-gray-500">Doctors</div>
+            <div class="text-2xl font-bold">{{ $totalDoctors }}</div>
         </div>
 
-        <!-- Quick Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Patients Card -->
-            <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center justify-center rounded-full size-12 bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
-                        <span class="material-symbols-outlined">personal_injury</span>
-                    </div>
-                    <span class="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">
-                        +12%
-                    </span>
-                </div>
-                <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm mb-1">Total Patients</p>
-                <p class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold">2,847</p>
-                <div class="flex items-center gap-1 mt-2">
-                    <span class="material-symbols-outlined text-sm text-green-500">arrow_upward</span>
-                    <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">305 new this month</p>
-                </div>
-            </div>
-
-            <!-- Doctors Card -->
-            <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center justify-center rounded-full size-12 bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400">
-                        <span class="material-symbols-outlined">stethoscope</span>
-                    </div>
-                    <span class="bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 text-xs px-2 py-1 rounded-full">
-                        +5%
-                    </span>
-                </div>
-                <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm mb-1">Active Doctors</p>
-                <p class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold">156</p>
-                <div class="flex items-center gap-1 mt-2">
-                    <span class="material-symbols-outlined text-sm text-green-500">arrow_upward</span>
-                    <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">8 new this month</p>
-                </div>
-            </div>
-
-            <!-- Appointments Card -->
-            <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center justify-center rounded-full size-12 bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
-                        <span class="material-symbols-outlined">calendar_month</span>
-                    </div>
-                    <span class="bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300 text-xs px-2 py-1 rounded-full">
-                        Today
-                    </span>
-                </div>
-                <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm mb-1">Today's Appointments</p>
-                <p class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold">47</p>
-                <div class="flex items-center gap-1 mt-2">
-                    <span class="material-symbols-outlined text-sm text-green-500">schedule</span>
-                    <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">12 upcoming</p>
-                </div>
-            </div>
-
-            <!-- Transactions Card -->
-            <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center justify-center rounded-full size-12 bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400">
-                        <span class="material-symbols-outlined">account_balance_wallet</span>
-                    </div>
-                    <span class="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">
-                        +18%
-                    </span>
-                </div>
-                <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm mb-1">Total Revenue</p>
-                <p class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold">$24.5K</p>
-                <div class="flex items-center gap-1 mt-2">
-                    <span class="material-symbols-outlined text-sm text-green-500">arrow_upward</span>
-                    <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">$3.7k this month</p>
-                </div>
-            </div>
+        <div class="p-4 bg-white rounded-lg shadow-sm">
+            <div class="text-sm text-gray-500">Patients</div>
+            <div class="text-2xl font-bold">{{ $totalPatients }}</div>
         </div>
 
-        <!-- Charts and Additional Data -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Recent Activity -->
-            <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold">
-                        Recent Activity
-                    </h2>
-                    <a class="text-primary text-sm font-bold hover:underline" href="#">View All</a>
-                </div>
-                <div class="flex flex-col gap-4">
-                    @for($i = 0; $i < 4; $i++)
-                    <div class="flex items-center gap-3 p-3 rounded-lg bg-background-light dark:bg-background-dark">
-                        <div class="flex items-center justify-center rounded-full size-10 bg-primary/10 dark:bg-primary/20 text-primary">
-                            <span class="material-symbols-outlined">person_add</span>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-text-light-primary dark:text-text-dark-primary font-semibold text-sm">
-                                New patient registration
-                            </p>
-                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs">
-                                John Doe registered as new patient
-                            </p>
-                        </div>
-                        <span class="text-text-light-secondary dark:text-text-dark-secondary text-xs">2 hours ago</span>
-                    </div>
-                    @endfor
-                </div>
-            </div>
+        <div class="p-4 bg-white rounded-lg shadow-sm">
+            <div class="text-sm text-gray-500">Appointments</div>
+            <div class="text-2xl font-bold">{{ $totalAppointments }}</div>
+            <div class="text-xs text-gray-400">Today: {{ $appointmentsToday }}</div>
+        </div>
 
-            <!-- System Status -->
-            <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-                <h2 class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold mb-6">
-                    System Status
-                </h2>
-                <div class="flex flex-col gap-4">
-                    <div class="flex items-center justify-between p-3 rounded-lg bg-background-light dark:bg-background-dark">
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-green-500">check_circle</span>
-                            <span class="text-text-light-primary dark:text-text-dark-primary text-sm">Database</span>
+        <div class="p-4 bg-white rounded-lg shadow-sm">
+            <div class="text-sm text-gray-500">Revenue (This Month)</div>
+            <div class="text-2xl font-bold">${{ number_format($revenueMonth, 2) }}</div>
+            <div class="text-xs text-gray-400">Last 7 days: ${{ number_format($revenueWeek, 2) }}</div>
+        </div>
+    </div>
+
+    <!-- Chart + Recent lists -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="col-span-2 bg-white p-4 rounded-lg shadow-sm">
+            <h3 class="font-semibold mb-2">Revenue (last 7 days)</h3>
+            <canvas id="revenueChart" height="120"></canvas>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+            <h3 class="font-semibold mb-3">Pending Orders</h3>
+            <div class="text-3xl font-bold mb-4">{{ $pendingOrders }}</div>
+
+            <h4 class="font-semibold mt-4">Recent Transactions</h4>
+            <ul class="divide-y mt-2">
+                @foreach($recentTransactions as $t)
+                    <li class="py-2">
+                        <div class="text-sm">
+                            <strong>{{ $t->user->name ?? 'User #' . $t->user_id }}</strong>
+                            <span class="text-gray-500 text-xs"> — {{ $t->type }} • {{ $t->status }}</span>
                         </div>
-                        <span class="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">Operational</span>
-                    </div>
-                    <div class="flex items-center justify-between p-3 rounded-lg bg-background-light dark:bg-background-dark">
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-green-500">check_circle</span>
-                            <span class="text-text-light-primary dark:text-text-dark-primary text-sm">API Services</span>
-                        </div>
-                        <span class="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">Operational</span>
-                    </div>
-                    <div class="flex items-center justify-between p-3 rounded-lg bg-background-light dark:bg-background-dark">
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-yellow-500">warning</span>
-                            <span class="text-text-light-primary dark:text-text-dark-primary text-sm">Payment Gateway</span>
-                        </div>
-                        <span class="bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300 text-xs px-2 py-1 rounded-full">Maintenance</span>
-                    </div>
-                    <div class="flex items-center justify-between p-3 rounded-lg bg-background-light dark:bg-background-dark">
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-green-500">check_circle</span>
-                            <span class="text-text-light-primary dark:text-text-dark-primary text-sm">Email Services</span>
-                        </div>
-                        <span class="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">Operational</span>
-                    </div>
-                </div>
-            </div>
+                        <div class="text-xs text-gray-600">${{ number_format($t->amount, 2) }} • {{ $t->created_at->diffForHumans() }}</div>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+
+    <!-- Recent Appointments table -->
+    <div class="mt-6 bg-white p-4 rounded-lg shadow-sm">
+        <h3 class="font-semibold mb-3">Recent Appointments</h3>
+
+        <div class="overflow-x-auto">
+            <table class="w-full table-auto">
+                <thead>
+                    <tr class="text-left text-xs text-gray-500">
+                        <th class="px-3 py-2">When</th>
+                        <th class="px-3 py-2">Doctor</th>
+                        <th class="px-3 py-2">Patient</th>
+                        <th class="px-3 py-2">Status</th>
+                        <th class="px-3 py-2">Fee</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($recentAppointments as $a)
+                        <tr class="border-t">
+                          <td class="px-3 py-2 text-sm">{{ $a->appointment_date->format('M d, Y H:i') }}</td>
+                            <td class="px-3 py-2 text-sm">{{ optional($a->doctor)->name ?? 'Doctor #' . $a->doctor_id }}</td>
+                            <td class="px-3 py-2 text-sm">{{ optional($a->patient)->name ?? 'Patient #' . $a->patient_id }}</td>
+                            <td class="px-3 py-2 text-sm">{{ ucfirst($a->status) }}</td>
+                            <td class="px-3 py-2 text-sm">${{ number_format($a->fee, 2) }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
-</div>
+
+@push('scripts')
+<!-- Chart.js CDN - remove if you already include it globally -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('livewire:load', function () {
+        const data = @json($revenueSeries);
+
+        const labels = data.map(d => d.label);
+        const amounts = data.map(d => d.amount);
+
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+
+        // destroy previous chart instance to avoid duplicates when Livewire updates
+        if (window._adminRevenueChart) {
+            window._adminRevenueChart.destroy();
+        }
+
+        window._adminRevenueChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Revenue',
+                    data: amounts,
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    });
+
+    // Listen for server-side events to refresh JS (optional)
+    Livewire.on('refreshChart', () => {
+        // re-run the livewire refresh triggers
+    });
+</script>
+@endpush

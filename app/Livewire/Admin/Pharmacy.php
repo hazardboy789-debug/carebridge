@@ -3,17 +3,32 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
+use App\Models\PharmacyOrder;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
-
 
 #[Layout('components.layouts.admin')]
-#[Title('Dashboard')]
-
 class Pharmacy extends Component
 {
     public function render()
     {
-        return view('livewire.admin.pharmacy');
+        // For now, we'll use static data since we don't have medication model
+        // You can create a Medication model later
+        
+        $recentOrders = PharmacyOrder::with('user')
+            ->orderBy('created_at', 'desc')
+            ->take(3)
+            ->get();
+
+        $stats = [
+            'totalItems' => 156,
+            'lowStock' => 12,
+            'outOfStock' => 3,
+            'categories' => 24,
+        ];
+
+        return view('livewire.admin.pharmacy', [
+            'recentOrders' => $recentOrders,
+            'stats' => $stats
+        ]);
     }
 }

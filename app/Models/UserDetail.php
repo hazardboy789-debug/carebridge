@@ -4,33 +4,47 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserDetail extends Model
 {
     use HasFactory;
 
-    // Set primary key
-    protected $primaryKey = 'user_details_id';
-
-    // Mass assignable fields
     protected $fillable = [
         'user_id',
         'dob',
         'age',
         'address',
         'gender',
-        'user_image',
         'description',
         'status',
     ];
 
+    protected $casts = [
+        'dob' => 'date',
+    ];
 
-    // Relationship: UserDetail belongs to a User
-    public function user()
+    /**
+     * Get the user that owns the details.
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relationship: UserDetail can have many attendances
-
+    /**
+     * Get formatted age
+     */
+    public function getFormattedAgeAttribute()
+    {
+        if ($this->age) {
+            return $this->age . ' years';
+        }
+        
+        if ($this->dob) {
+            return $this->dob->age . ' years';
+        }
+        
+        return 'Not specified';
+    }
 }

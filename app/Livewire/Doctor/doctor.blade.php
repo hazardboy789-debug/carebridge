@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-
 <html class="light" lang="en">
-
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
@@ -50,17 +48,15 @@
 <body class="font-display bg-background-light dark:bg-background-dark">
     <div class="relative flex min-h-screen w-full">
         <!-- SideNavBar -->
-        <aside
-            class="sticky top-0 h-screen w-64 flex-shrink-0 bg-card-light dark:bg-card-dark border-r border-border-light dark:border-border-dark">
+        <aside class="sticky top-0 h-screen w-64 flex-shrink-0 bg-card-light dark:bg-card-dark border-r border-border-light dark:border-border-dark">
             <div class="flex h-full flex-col p-4">
                 <div class="flex items-center gap-3 px-3 py-4">
                     <div class="size-8 text-primary">
                         <svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                            <path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z"
-                                fill="currentColor" fill-rule="evenodd"></path>
+                            <path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"></path>
                         </svg>
                     </div>
-                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold">Care-Path</h2>
+                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold">Care-Path Doctor</h2>
                 </div>
                 <div class="flex flex-col gap-4 mt-6 grow">
                     <div class="flex flex-col gap-2">
@@ -74,10 +70,10 @@
                         </a>
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('doctor.chat') ? 'bg-primary/10 dark:bg-primary/20' : 'hover:bg-primary/10 dark:hover:bg-primary/20 group' }}" href="{{ route('doctor.chat') }}">
                             <span class="material-symbols-outlined text-2xl {{ request()->routeIs('doctor.chat') ? 'text-primary' : 'text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary' }}">chat</span>
-                            <p class="{{ request()->routeIs('doctor.chat') ? 'text-primary text-sm font-bold' : 'text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium' }}">Chat</p>
+                            <p class="{{ request()->routeIs('doctor.chat') ? 'text-primary text-sm font-bold' : 'text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium' }}">Consultation</p>
                         </a>
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('doctor.patients') ? 'bg-primary/10 dark:bg-primary/20' : 'hover:bg-primary/10 dark:hover:bg-primary/20 group' }}" href="{{ route('doctor.patients') }}">
-                            <span class="material-symbols-outlined text-2xl {{ request()->routeIs('doctor.patients') ? 'text-primary' : 'text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary' }}">groups</span>
+                            <span class="material-symbols-outlined text-2xl {{ request()->routeIs('doctor.patients') ? 'text-primary' : 'text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary' }}">personal_injury</span>
                             <p class="{{ request()->routeIs('doctor.patients') ? 'text-primary text-sm font-bold' : 'text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium' }}">Patients</p>
                         </a>
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('doctor.wallet') ? 'bg-primary/10 dark:bg-primary/20' : 'hover:bg-primary/10 dark:hover:bg-primary/20 group' }}" href="{{ route('doctor.wallet') }}">
@@ -92,40 +88,31 @@
                 </div>
                 <div class="flex flex-col gap-1">
                     <div class="flex items-center gap-3 px-3 py-4 border-t border-border-light dark:border-border-dark">
-                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
-                            data-alt="Profile picture of Dr. Evelyn Reed"
-                            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAPyLJw3e-STCG-Z_O80E32_v6PZpysy71S1oSZahWCaDPPQmvcgI2t0gUj2Zrs9mZc37Qkvjq-vINlPqEmVzUN_TA36pmlmevEoz2tgIGY5cI3MriGJn0lQxDKPb_26F2nPz6-be5413GVSx6e1MTVRDeDgpC9AXz4sPxw53iRSaKl4L-kNXkJUbxSJl3uRQ0yHwUqig5sZkkhDpfh1pOixCpqMsnux06f4TcFD80t8P87irVbR-BWMQobLI6VPC5xNX2hdY2Z0w");'>
-                        </div>
+                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAPyLJw3e-STCG-Z_O80E32_v6PZpysy71S1oSZahWCaDPPQmvcgI2t0gUj2Zrs9mZc37Qkvjq-vINlPqEmVzUN_TA36pmlmevEoz2tgIGY5cI3MriGJn0lQxDKPb_26F2nPz6-be5413GVSx6e1MTVRDeDgpC9AXz4sPxw53iRSaKl4L-kNXkJUbxSJl3uRQ0yHwUqig5sZkkhDpfh1pOixCpqMsnux06f4TcFD80t8P87irVbR-BWMQobLI6VPC5xNX2hdY2Z0w");'></div>
                         <div class="flex flex-col">
-                            <h1 class="text-text-light-primary dark:text-text-dark-primary text-sm font-semibold">Dr. Evelyn Reed</h1>
-                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs">Oncologist</p>
+                            <h1 class="text-text-light-primary dark:text-text-dark-primary text-sm font-semibold">Dr. {{ auth()->user()->name ?? 'Doctor' }}</h1>
+                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs">{{ auth()->user()->specialization ?? 'Doctor' }}</p>
                         </div>
                     </div>
                 </div>
             </div>
         </aside>
+        
         <!-- Main Content -->
         <main class="flex-1 flex flex-col">
             <!-- TopNavBar -->
-            <header
-                class="sticky top-0 flex items-center justify-between whitespace-nowrap bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 px-8 py-4">
+            <header class="sticky top-0 flex items-center justify-end whitespace-nowrap bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 px-8 py-4">
                 <div class="flex items-center gap-4">
-                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-lg font-semibold" id="current-time">
-                        {{ date('l, F j, Y') }}
-                    </h2>
-                </div>
-                <div class="flex items-center gap-4">
-                    <button
-                        class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary relative">
+                    <button class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary">
                         <span class="material-symbols-outlined text-2xl">notifications</span>
-                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full size-5 flex items-center justify-center">3</span>
                     </button>
-                    <button
-                        class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary">
-                        <span class="material-symbols-outlined text-2xl">help_outline</span>
-                    </button>
-                    <button
-                        class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary" aria-label="Logout">
+                            <span class="material-symbols-outlined text-2xl">logout</span>
+                        </button>
+                    </form>
+                    <button class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary">
                         <span class="material-symbols-outlined text-2xl">settings</span>
                     </button>
                 </div>
@@ -134,28 +121,7 @@
             <div class="main">
                 {{ $slot }}
             </div>
-
         </main>
     </div>
-
-    <script>
-        function updateTime() {
-            const now = new Date();
-            const options = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            };
-            document.getElementById('current-time').textContent = now.toLocaleDateString('en-US', options);
-        }
-        
-        updateTime();
-        setInterval(updateTime, 1000);
-    </script>
 </body>
-
 </html>
