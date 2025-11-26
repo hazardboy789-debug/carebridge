@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Appointment extends Model
 {
@@ -13,27 +12,27 @@ class Appointment extends Model
     protected $fillable = [
         'patient_id',
         'doctor_id',
-        'appointment_date', // Correct column name
+        'appointment_date',
+        'appointment_time',
         'status',
         'symptoms',
-        'diagnosis',
-        'prescription',
         'notes',
-        'fee',
-        'payment_status',
+        'fee'
     ];
 
     protected $casts = [
-        'appointment_date' => 'datetime', // Correct column name
+        'appointment_date' => 'date',
         'fee' => 'decimal:2',
     ];
 
-    public function patient(): BelongsTo
+    // Relationship with patient
+    public function patient()
     {
         return $this->belongsTo(User::class, 'patient_id');
     }
 
-    public function doctor(): BelongsTo
+    // Relationship with doctor
+    public function doctor()
     {
         return $this->belongsTo(User::class, 'doctor_id');
     }

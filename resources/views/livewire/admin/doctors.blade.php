@@ -80,7 +80,19 @@
 
                             <div>
                                 <label class="text-xs">Specialization *</label>
-                                <input type="text" wire:model.defer="specialization" class="mt-1 w-full rounded border px-3 py-2 dark:bg-slate-700 dark:text-white" placeholder="e.g., Cardiology">
+                                <select wire:model.defer="specialization" class="mt-1 w-full rounded border px-3 py-2 dark:bg-slate-700 dark:text-white">
+                                    <option value="">Select Specialization</option>
+                                    <option value="general_practitioner">General Physician</option>
+                                    <option value="cardiologist">Cardiologist</option>
+                                    <option value="psychiatrist">Psychiatrist</option>
+                                    <option value="orthopedic">Orthopedic Specialist</option>
+                                    <option value="ophthalmologist">Ophthalmologist</option>
+                                    <option value="dermatologist">Dermatologist</option>
+                                    <option value="gastroenterologist">Gastroenterologist</option>
+                                    <option value="ent_specialist">ENT Specialist</option>
+                                    <option value="neurologist">Neurologist</option>
+                                    <option value="pediatrician">Pediatrician</option>
+                                </select>
                                 @error('specialization') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 

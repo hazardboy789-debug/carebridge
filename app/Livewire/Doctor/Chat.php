@@ -29,34 +29,27 @@ class Chat extends Component
     public function loadRecentChats()
     {
         try {
-            // Get patients who have recent conversations with this doctor
-            $recentChatPatientIds = ChatMessage::where('sender_id', auth()->id())
-                ->orWhere('receiver_id', auth()->id())
-                ->select('sender_id', 'receiver_id')
-                ->get()
-                ->flatMap(function ($message) {
-                    return [$message->sender_id, $message->receiver_id];
-                })
-                ->unique()
-                ->filter(function ($userId) {
-                    return $userId !== auth()->id();
-                });
+            \Log::info('Loading recent chats for doctor: ' . auth()->id());
 
-            // Also include patients with appointments but no messages yet
+            // Get ALL patients who have appointments with this doctor
             $appointmentPatientIds = Appointment::where('doctor_id', auth()->id())
                 ->whereNotNull('patient_id')
+                ->distinct()
                 ->pluck('patient_id')
-                ->unique();
+                ->toArray();
 
-            // Combine both and get unique patient IDs
-            $allPatientIds = $recentChatPatientIds->merge($appointmentPatientIds)->unique();
+            \Log::info('Appointment patient IDs:', $appointmentPatientIds);
 
-            if (empty($allPatientIds)) {
+            if (empty($appointmentPatientIds)) {
                 $this->patients = [];
+                \Log::info('No appointment patients found');
                 return;
             }
 
-            $users = User::whereIn('id', $allPatientIds)->get();
+            // Get users with their latest message
+            $users = User::whereIn('id', $appointmentPatientIds)->get();
+
+            \Log::info('Found users: ' . $users->count());
 
             $this->patients = $users->map(function($user) {
                 $lastMessage = $this->getLastMessage($user->id);
@@ -72,18 +65,20 @@ class Chat extends Component
                 ];
             })->sortByDesc('last_activity')->values()->toArray();
 
+            \Log::info('Processed patients:', ['count' => count($this->patients)]);
+
         } catch (\Exception $e) {
             Log::error('Error loading recent chats for doctor: ' . $e->getMessage());
             $this->patients = [];
         }
     }
 
-    // ADD THIS METHOD FOR AUTO-REFRESH
-    public function pollMessages()
+    // Add this method to handle prescription creation
+    public function refreshOnPrescription()
     {
+        $this->loadRecentChats();
         if ($this->selectedPatient) {
             $this->loadMessages();
-            $this->loadRecentChats();
         }
     }
 
@@ -93,6 +88,7 @@ class Chat extends Component
             $this->selectedPatient = User::find($patientId);
             
             if ($this->selectedPatient) {
+                \Log::info('Selected patient: ' . $this->selectedPatient->name);
                 $this->loadMessages();
                 $this->markMessagesAsRead();
                 $this->dispatch('messageSent');
@@ -121,6 +117,8 @@ class Chat extends Component
                 ->orderBy('created_at', 'asc')
                 ->get();
 
+            \Log::info('Loaded messages: ' . $this->messages->count());
+
         } catch (\Exception $e) {
             Log::error('Error loading messages for doctor: ' . $e->getMessage());
             $this->messages = [];
@@ -129,10 +127,11 @@ class Chat extends Component
 
     public function sendMessage()
     {
-        $this->validate([
-            'newMessage' => 'required_without:fileUpload',
-            'fileUpload' => 'nullable|file|max:10240',
-        ]);
+        // Validate input
+        if (empty($this->newMessage) && !$this->fileUpload) {
+            session()->flash('error', 'Please enter a message or select a file.');
+            return;
+        }
 
         if (!$this->selectedPatient) {
             session()->flash('error', 'Please select a patient first.');
@@ -140,33 +139,52 @@ class Chat extends Component
         }
 
         try {
+            // Prepare message data
             $messageData = [
                 'sender_id' => auth()->id(),
                 'receiver_id' => $this->selectedPatient->id,
             ];
 
+            // Handle file upload
             if ($this->fileUpload) {
+                // Validate file
+                $this->validate([
+                    'fileUpload' => 'file|max:10240',
+                ]);
+
                 $filePath = $this->fileUpload->store('chat_files', 'public');
                 $messageData['file_path'] = $filePath;
                 $messageData['message_type'] = $this->getFileType($this->fileUpload);
                 $messageData['message'] = 'Sent a file';
             } else {
+                // Validate text message
+                $this->validate([
+                    'newMessage' => 'required|string|min:1',
+                ]);
+
                 $messageData['message'] = trim($this->newMessage);
                 $messageData['message_type'] = 'text';
             }
 
+            // Create the chat message
             ChatMessage::create($messageData);
 
+            // Reset form
             $this->newMessage = '';
             $this->fileUpload = null;
+
+            // Reload messages
             $this->loadMessages();
             $this->loadRecentChats();
+
+            // Dispatch event
             $this->dispatch('messageSent');
 
             session()->flash('success', 'Message sent successfully!');
 
         } catch (\Exception $e) {
-            Log::error('Doctor chat message send error: ' . $e->getMessage());
+            // Log error for debugging
+            Log::error('Chat message send error: ' . $e->getMessage());
             session()->flash('error', 'Failed to send message. Please try again.');
         }
     }
@@ -225,7 +243,6 @@ class Chat extends Component
 
     public function render()
     {
-        return view('livewire.doctor.chat')
-            ->layout('components.layouts.doctor');
+        return view('livewire.doctor.chat');
     }
 }
