@@ -217,59 +217,73 @@
                             </div>
 
                             <!-- Suggested Doctors -->
-                            @if(count($suggestedDoctors) > 0)
-                        @if(count($suggestedDoctors) > 0)
-<div>
-    <h3 class="text-text-light-primary dark:text-text-dark-primary font-semibold mb-4">
-        Suggested Doctors ({{ count($suggestedDoctors) }} found)
-    </h3>
-    <div class="grid gap-3">
-        @foreach($suggestedDoctors as $doctor)
-        <div class="flex items-center justify-between p-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                    <span class="material-symbols-outlined text-primary text-lg">person</span>
-                </div>
-                <div class="flex-1">
-                    <p class="text-text-light-primary dark:text-text-dark-primary font-semibold">{{ $doctor['name'] }}</p>
-                    <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
-                        {{ $doctor['specialty'] }} • {{ $doctor['experience'] }}
-                    </p>
-                    <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs">
-                        {{ $doctor['license'] }}
-                    </p>
-                    @if($doctor['description'])
-                    <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs mt-1">
-                        {{ Str::limit($doctor['description'], 60) }}
-                    </p>
-                    @endif
-                </div>
-            </div>
-            <button wire:click="bookAppointment({{ $doctor['id'] }})"
-                    class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 whitespace-nowrap">
-                <span class="material-symbols-outlined text-sm">calendar_today</span>
-                Book Appointment
+                            <!-- Suggested Doctors -->
+@if($suggestedDoctor)
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5>Recommended Doctor</h5>
+            <p><strong>Dr. {{ $suggestedDoctor->name }}</strong></p>
+            <p><strong>Specialization:</strong> {{ $suggestedDoctor->doctorDetail->specialization ?? 'General Practitioner' }}</p>
+            <p><strong>Experience:</strong> {{ $suggestedDoctor->doctorDetail->experience_years ?? 'N/A' }} years</p>
+            
+            <button wire:click="$dispatch('bookWithDoctor', {doctorId: {{ $suggestedDoctor->id }}, symptoms: '{{ $description }}' })" 
+                    class="btn btn-success">
+                <i class="fas fa-calendar-plus me-2"></i>Book Appointment with This Doctor
             </button>
         </div>
-        @endforeach
     </div>
-</div>
-@else
-<div class="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
-    <div class="flex items-center gap-3">
-        <span class="material-symbols-outlined text-yellow-600 dark:text-yellow-400">info</span>
-        <div>
-            <p class="text-yellow-800 dark:text-yellow-300 font-semibold">No Doctors Available</p>
-            <p class="text-yellow-700 dark:text-yellow-400 text-sm">
-                We couldn't find any available {{ $specialtyNames[$recommendedSpecialty] ?? 'General Physician' }} in our system.
-                Please try again later or contact our support for assistance.
-            </p>
+@endif
+
+            @if(count($suggestedDoctors) > 0)
+    <div>
+        <h3 class="text-text-light-primary dark:text-text-dark-primary font-semibold mb-4">
+            Suggested Doctors ({{ count($suggestedDoctors) }} found)
+        </h3>
+        <div class="grid gap-3">
+            @foreach($suggestedDoctors as $doctor)
+            <div class="flex items-center justify-between p-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-lg">person</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-text-light-primary dark:text-text-dark-primary font-semibold">{{ $doctor['name'] }}</p>
+                        <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
+                            {{ $doctor['specialty'] }} • {{ $doctor['experience'] }}
+                        </p>
+                        <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs">
+                            {{ $doctor['license'] }}
+                        </p>
+                        @if($doctor['description'])
+                        <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs mt-1">
+                            {{ Str::limit($doctor['description'], 60) }}
+                        </p>
+                        @endif
+                    </div>
+                </div>
+                <button wire:click="$dispatch('bookWithDoctor', {doctorId: {{ $doctor['id'] }}, symptoms: '{{ $description }}' })"
+                        class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 whitespace-nowrap">
+                    <span class="material-symbols-outlined text-sm">calendar_today</span>
+                    Book Appointment
+                </button>
+            </div>
+            @endforeach
         </div>
     </div>
-</div>
+                @else
+    <div class="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+        <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-yellow-600 dark:text-yellow-400">info</span>
+            <div>
+                <p class="text-yellow-800 dark:text-yellow-300 font-semibold">No Doctors Available</p>
+                <p class="text-yellow-700 dark:text-yellow-400 text-sm">
+                    We couldn't find any available {{ $specialtyNames[$recommendedSpecialty] ?? 'General Physician' }} in our system.
+                    Please try again later or contact our support for assistance.
+                </p>
+            </div>
+        </div>
+    </div>
 @endif
-                            @endif
-
                             <!-- Action Buttons -->
                             <div class="flex gap-3">
                                 <button wire:click="resetForm"

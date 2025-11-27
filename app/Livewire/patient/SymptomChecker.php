@@ -23,6 +23,7 @@ class SymptomChecker extends Component
     public $recommendedSpecialty = '';
     public $recommendation = '';
     public $suggestedDoctors = [];
+    public $suggestedDoctor = null; // ADDED THIS
     public $checkHistory = [];
     public $aiAnalysis = null;
     public $isAnalyzing = false;
@@ -70,6 +71,9 @@ class SymptomChecker extends Component
         'neurologist' => 'Neurologist',
         'pediatrician' => 'Pediatrician',
     ];
+
+    // ADDED: Event listener for booking
+    protected $listeners = ['bookWithDoctor' => 'handleBookWithDoctor'];
 
     public function mount()
     {
@@ -256,12 +260,45 @@ class SymptomChecker extends Component
     private function findRealDoctors()
     {
         // Query by specialization code (e.g., 'general_practitioner')
-        $doctors = DoctorDetail::where('specialization', $this->recommendedSpecialty)
+        $doctorDetails = DoctorDetail::where('specialization', $this->recommendedSpecialty)
             ->where('status', 'approved')
             ->with('user')
             ->limit(4)
-            ->get()
-            ->map(function ($doctorDetail) {
+            ->get();
+
+        // Set the first doctor as the suggested doctor
+        if ($doctorDetails->count() > 0) {
+            $firstDoctor = $doctorDetails->first();
+            $this->suggestedDoctor = $firstDoctor->user; // This sets the suggested doctor
+        }
+
+        // Map all doctors for the list
+        $doctors = $doctorDetails->map(function ($doctorDetail) {
+            return [
+                'id' => $doctorDetail->user_id,
+                'name' => 'Dr. ' . $doctorDetail->user->name,
+                'specialty' => $this->specialtyNames[$doctorDetail->specialization] ?? $doctorDetail->specialization,
+                'experience' => $doctorDetail->experience_years ? $doctorDetail->experience_years . ' years experience' : 'Experienced',
+                'license' => $doctorDetail->license_number ? 'License: ' . $doctorDetail->license_number : 'Licensed',
+                'description' => $doctorDetail->description ?? 'Professional medical practitioner',
+            ];
+        })->toArray();
+
+        // If no doctors found, fallback to general practitioners
+        if (empty($doctors)) {
+            $doctorDetails = DoctorDetail::where('status', 'approved')
+                ->where('specialization', 'general_practitioner')
+                ->with('user')
+                ->limit(4)
+                ->get();
+
+            // Set the first doctor as the suggested doctor
+            if ($doctorDetails->count() > 0) {
+                $firstDoctor = $doctorDetails->first();
+                $this->suggestedDoctor = $firstDoctor->user; // This sets the suggested doctor
+            }
+
+            $doctors = $doctorDetails->map(function ($doctorDetail) {
                 return [
                     'id' => $doctorDetail->user_id,
                     'name' => 'Dr. ' . $doctorDetail->user->name,
@@ -270,42 +307,35 @@ class SymptomChecker extends Component
                     'license' => $doctorDetail->license_number ? 'License: ' . $doctorDetail->license_number : 'Licensed',
                     'description' => $doctorDetail->description ?? 'Professional medical practitioner',
                 ];
-            })
-            ->toArray();
-
-        // If no doctors found, fallback to general practitioners
-        if (empty($doctors)) {
-            $doctors = DoctorDetail::where('status', 'approved')
-                ->where('specialization', 'general_practitioner')
-                ->with('user')
-                ->limit(4)
-                ->get()
-                ->map(function ($doctorDetail) {
-                    return [
-                        'id' => $doctorDetail->user_id,
-                        'name' => 'Dr. ' . $doctorDetail->user->name,
-                        'specialty' => $this->specialtyNames[$doctorDetail->specialization] ?? $doctorDetail->specialization,
-                        'experience' => $doctorDetail->experience_years ? $doctorDetail->experience_years . ' years experience' : 'Experienced',
-                        'license' => $doctorDetail->license_number ? 'License: ' . $doctorDetail->license_number : 'Licensed',
-                        'description' => $doctorDetail->description ?? 'Professional medical practitioner',
-                    ];
-                })
-                ->toArray();
+            })->toArray();
         }
 
         return $doctors;
     }
 
+    // ADDED: Handle booking from the blade file
+    public function handleBookWithDoctor($doctorId, $symptoms = null)
+    {
+        // Store in session for the appointments page
+        session([
+            'recommended_doctor_id' => $doctorId,
+            'symptoms_description' => $symptoms ?? $this->description,
+        ]);
+
+        // Redirect to appointments page
+        return redirect()->route('patient.appointments');
+    }
+
     public function bookAppointment($doctorId)
     {
-    // Store the doctor ID and symptoms in session to pre-fill appointment form
-    session([
-        'recommended_doctor_id' => $doctorId,
-        'symptoms_description' => $this->primarySymptom . '. ' . $this->description,
-    ]);
+        // Store the doctor ID and symptoms in session to pre-fill appointment form
+        session([
+            'recommended_doctor_id' => $doctorId,
+            'symptoms_description' => $this->primarySymptom . '. ' . $this->description,
+        ]);
 
-    // Redirect to appointments page with the selected doctor pre-selected
-    return redirect()->route('patient.appointments');
+        // Redirect to appointments page with the selected doctor pre-selected
+        return redirect()->route('patient.appointments');
     }
 
     public function resetForm()
@@ -319,6 +349,7 @@ class SymptomChecker extends Component
             'recommendedSpecialty',
             'recommendation',
             'suggestedDoctors',
+            'suggestedDoctor', // ADDED THIS
             'aiAnalysis'
         ]);
     }
