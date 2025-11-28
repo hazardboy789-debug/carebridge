@@ -3,86 +3,122 @@
 namespace App\Livewire\Doctor;
 
 use Livewire\Component;
-use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
 use App\Models\Appointment;
-use Carbon\Carbon;
+use App\Models\User;
 
-#[Layout('components.layouts.doctor')]
+#[Layout('components.layouts.doctor')] // Create this layout if needed
 class Appointments extends Component
 {
-    use WithPagination;
+    public $pendingAppointments = [];
+    public $upcomingAppointments = [];
+    public $pastAppointments = [];
+    
+    public $selectedAppointment;
+    public $showAppointmentModal = false;
+    public $appointmentNotes;
 
-    public $search = '';
-    public $status = '';
-    public $dateFilter = '';
-    public $showModal = false;
-    public $editingAppointment = null;
-
-    // Tabs filter
-    public $filter = 'today';
-
-    // Form fields
-    public $patient_id;
-    public $appointment_date;
-    public $appointment_time;
-    public $symptoms;
-    public $notes;
-    public $fee;
-    public $status_edit = 'scheduled';
-
-    public function updatingSearch()
+    public function mount()
     {
-        $this->resetPage();
+        $this->loadAppointments();
     }
 
-    public function setFilter($filter)
+    public function loadAppointments()
     {
-        $this->filter = $filter;
-        $this->resetPage();
+        $doctorId = auth()->id();
+        
+        // Pending appointments waiting for approval
+        $this->pendingAppointments = Appointment::with(['patient', 'patient.userDetails'])
+            ->where('doctor_id', $doctorId)
+            ->where('status', 'pending')
+            ->orderBy('scheduled_at', 'asc')
+            ->get()
+            ->toArray();
+
+        // Upcoming confirmed appointments
+        $this->upcomingAppointments = Appointment::with(['patient', 'patient.userDetails'])
+            ->where('doctor_id', $doctorId)
+            ->where('status', 'confirmed')
+            ->where('scheduled_at', '>=', now()->startOfDay())
+            ->orderBy('scheduled_at', 'asc')
+            ->get()
+            ->toArray();
+
+        // Past appointments
+        $this->pastAppointments = Appointment::with(['patient', 'patient.userDetails'])
+            ->where('doctor_id', $doctorId)
+            ->where('doctor_id', $doctorId)
+            ->where(function($query) {
+                $query->where('status', 'completed')
+                      ->orWhere('status', 'cancelled');
+            })
+            ->orderBy('scheduled_at', 'desc')
+            ->get()
+            ->toArray();
+    }
+
+    public function viewAppointment($appointmentId)
+    {
+        $this->selectedAppointment = Appointment::with(['patient', 'patient.userDetails'])
+            ->where('doctor_id', auth()->id())
+            ->find($appointmentId);
+            
+        $this->showAppointmentModal = true;
+    }
+
+    public function approveAppointment($appointmentId)
+    {
+        try {
+            $appointment = Appointment::where('doctor_id', auth()->id())
+                ->where('id', $appointmentId)
+                ->first();
+
+            if ($appointment) {
+                $appointment->update([
+                    'status' => 'confirmed',
+                    'notes' => $this->appointmentNotes
+                ]);
+                
+                session()->flash('message', 'Appointment approved successfully.');
+                $this->closeModal();
+                $this->loadAppointments();
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to approve appointment.');
+        }
+    }
+
+    public function rejectAppointment($appointmentId)
+    {
+        try {
+            $appointment = Appointment::where('doctor_id', auth()->id())
+                ->where('id', $appointmentId)
+                ->first();
+
+            if ($appointment) {
+                $appointment->update([
+                    'status' => 'cancelled',
+                    'notes' => $this->appointmentNotes
+                ]);
+                
+                session()->flash('message', 'Appointment rejected successfully.');
+                $this->closeModal();
+                $this->loadAppointments();
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to reject appointment.');
+        }
+    }
+
+    public function closeModal()
+    {
+        $this->showAppointmentModal = false;
+        $this->selectedAppointment = null;
+        $this->appointmentNotes = null;
     }
 
     public function render()
     {
-        $appointments = Appointment::with('patient')
-            ->where('doctor_id', auth()->id())
-            ->when($this->search, function ($query) {
-                $query->whereHas('patient', function ($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%')
-                      ->orWhere('email', 'like', '%' . $this->search . '%');
-                });
-            })
-            ->when($this->status, function ($query) {
-                $query->where('status', $this->status);
-            })
-            ->when($this->filter, function ($query) {
-                if ($this->filter === 'today') {
-                    $query->whereDate('appointment_date', Carbon::today());
-                } elseif ($this->filter === 'upcoming') {
-                    $query->where('appointment_date', '>', Carbon::today());
-                } elseif ($this->filter === 'pending') {
-                    $query->where('status', 'pending');
-                }
-                // 'all' returns all
-            })
-            ->orderBy('appointment_date', 'desc')
-            ->paginate(10);
-
-        // Appointment stats for sidebar
-        $doctorId = auth()->id();
-        $appointmentStats = [
-            'today' => Appointment::where('doctor_id', $doctorId)->whereDate('appointment_date', Carbon::today())->count(),
-            'week' => Appointment::where('doctor_id', $doctorId)->whereBetween('appointment_date', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count(),
-            'pending' => Appointment::where('doctor_id', $doctorId)->where('status', 'pending')->count(),
-            'completed' => Appointment::where('doctor_id', $doctorId)->where('status', 'completed')->count(),
-        ];
-
-        return view('livewire.doctor.appointments', [
-            'appointments' => $appointments,
-            'filter' => $this->filter,
-            'appointmentStats' => $appointmentStats,
-        ]);
+        return view('livewire.doctor.appointments');
     }
-
-    // ... rest of your methods
 }

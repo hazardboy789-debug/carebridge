@@ -3,179 +3,162 @@
 namespace App\Livewire\Patient;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Models\Appointment;
 use App\Models\User;
-use Livewire\Attributes\Layout;
+use App\Models\DoctorDetail;
+use Carbon\Carbon;
 
 #[Layout('components.layouts.patient')]
-
 class Appointments extends Component
 {
-    public $upcomingAppointments = [];
-    public $pastAppointments = [];
-    
-    // Booking properties
     public $showBookingModal = false;
     public $selectedDoctorId;
     public $selectedDoctor;
     public $bookingDate;
-    public $bookingTime;
+    public $bookingTime = '09:00';
     public $bookingReason;
-    public $availableSlots = [];
-    public $suggestedSymptoms;
-
-    protected $rules = [
-        'selectedDoctorId' => 'required|exists:users,id',
-        'bookingDate' => 'required|date|after:today',
-        'bookingTime' => 'required',
-        'bookingReason' => 'required|min:10'
-    ];
-
-    protected $listeners = ['bookWithDoctor' => 'openBookingWithDoctor'];
+    
+    public $upcomingAppointments = [];
+    public $pastAppointments = [];
+    public $doctors = [];
 
     public function mount()
     {
         $this->loadAppointments();
-        $this->generateTimeSlots();
+        $this->loadDoctors();
     }
 
     public function loadAppointments()
-{
-    $currentDate = now()->format('Y-m-d');
-    $currentTime = now()->format('H:i:s');
+    {
+        $patientId = auth()->id();
+        
+        // Upcoming appointments (today and future)
+        $this->upcomingAppointments = Appointment::with(['doctor', 'doctor.doctorDetail'])
+            ->where('patient_id', $patientId)
+            ->where('appointment_date', '>=', now()->format('Y-m-d'))
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->orderBy('appointment_date', 'asc')
+            ->orderBy('id', 'asc') // Remove appointment_time, use id instead
+            ->get()
+            ->toArray();
 
-    // Upcoming appointments
-    $this->upcomingAppointments = Appointment::where('patient_id', auth()->id())
-        ->where('status', '!=', 'cancelled')
-        ->where(function($query) use ($currentDate, $currentTime) {
-            $query->where('appointment_date', '>', $currentDate)
-                  ->orWhere(function($q) use ($currentDate, $currentTime) {
-                      $q->where('appointment_date', $currentDate)
-                        ->where('appointment_time', '>=', $currentTime); 
-                  });
-        })
-        ->with(['doctor', 'doctor.doctorDetail'])
-        ->orderBy('appointment_date', 'asc')
-        ->orderBy('appointment_time', 'asc') //
-        ->get()
-        ->toArray();
+        // Past appointments
+        $this->pastAppointments = Appointment::with(['doctor', 'doctor.doctorDetail'])
+            ->where('patient_id', $patientId)
+            ->where('appointment_date', '<', now()->format('Y-m-d'))
+            ->whereIn('status', ['completed', 'cancelled'])
+            ->orderBy('appointment_date', 'desc')
+            ->orderBy('id', 'desc') // Remove appointment_time, use id instead
+            ->get()
+            ->toArray();
+    }
 
-    // Past appointments
-    $this->pastAppointments = Appointment::where('patient_id', auth()->id())
-        ->where(function($query) use ($currentDate, $currentTime) {
-            $query->where('appointment_date', '<', $currentDate)
-                  ->orWhere(function($q) use ($currentDate, $currentTime) {
-                      $q->where('appointment_date', $currentDate)
-                        ->where('appointment_time', '<', $currentTime); 
-                  });
-        })
-        ->with(['doctor', 'doctor.doctorDetail'])
-        ->orderBy('appointment_date', 'desc')
-        ->orderBy('appointment_time', 'desc') 
-        ->get()
-        ->toArray();
-}
+    public function loadDoctors()
+    {
+        $this->doctors = User::where('role', 'doctor')
+            ->where('is_active', true)
+            ->with('doctorDetail')
+            ->get();
+    }
 
     public function openBooking()
     {
         $this->showBookingModal = true;
-        $this->reset(['selectedDoctorId', 'selectedDoctor', 'bookingDate', 'bookingTime', 'bookingReason']);
-        $this->generateTimeSlots();
+        $this->resetBookingForm();
     }
 
-    public function openBookingWithDoctor($doctorId, $symptoms = null)
+    public function resetBookingForm()
     {
-        $this->selectedDoctorId = $doctorId;
-        $this->selectedDoctor = User::with('doctorDetail')->find($doctorId);
-        $this->suggestedSymptoms = $symptoms;
-        $this->bookingReason = $symptoms ? "Symptoms: " . $symptoms : '';
-        $this->showBookingModal = true;
-        $this->generateTimeSlots();
+        $this->selectedDoctorId = null;
+        $this->selectedDoctor = null;
+        $this->bookingDate = null;
+        $this->bookingTime = '09:00';
+        $this->bookingReason = null;
     }
 
-    public function generateTimeSlots()
+    public function closeBooking()
     {
-        $slots = [];
-        $start = strtotime('09:00');
-        $end = strtotime('17:00');
-        
-        while ($start <= $end) {
-            $slots[] = date('H:i:s', $start);
-            $start += 1800; // 30 minutes
+        $this->showBookingModal = false;
+        $this->resetBookingForm();
+    }
+
+    public function updatedSelectedDoctorId($value)
+    {
+        if ($value) {
+            $this->selectedDoctor = User::with('doctorDetail')->find($value);
+        } else {
+            $this->selectedDoctor = null;
         }
-        
-        $this->availableSlots = $slots;
     }
 
     public function checkSlotAvailability()
     {
-        if (!$this->selectedDoctorId || !$this->bookingDate || !$this->bookingTime) {
+        if (!$this->selectedDoctorId || !$this->bookingDate) {
             return true;
         }
 
-        return !Appointment::where('doctor_id', $this->selectedDoctorId)
+        // Check if the doctor has an appointment on this date
+        $existingAppointment = Appointment::where('doctor_id', $this->selectedDoctorId)
             ->where('appointment_date', $this->bookingDate)
-            ->where('appointment_time', $this->bookingTime)
             ->whereIn('status', ['pending', 'confirmed'])
             ->exists();
+
+        return !$existingAppointment;
     }
 
     public function bookAppointment()
     {
-        $this->validate();
-
-        if (!$this->checkSlotAvailability()) {
-            $this->addError('bookingTime', 'This time slot is already booked. Please choose another time.');
-            return;
-        }
-
-        // Create appointment
-        Appointment::create([
-            'patient_id' => auth()->id(),
-            'doctor_id' => $this->selectedDoctorId,
-            'appointment_date' => $this->bookingDate,
-            'appointment_time' => $this->bookingTime,
-            'status' => 'pending',
-            'symptoms' => $this->bookingReason,
-            'notes' => 'Booked via patient portal'
+        $this->validate([
+            'selectedDoctorId' => 'required|exists:users,id',
+            'bookingDate' => 'required|date|after:today',
+            'bookingTime' => 'required',
+            'bookingReason' => 'required|string|min:10|max:500',
         ]);
 
-        $this->resetBooking();
-        $this->loadAppointments();
-        
-        session()->flash('booking_success', 'Appointment booked successfully! Waiting for doctor confirmation.');
+        try {
+            // Create appointment - only use columns that exist
+            Appointment::create([
+                'patient_id' => auth()->id(),
+                'doctor_id' => $this->selectedDoctorId,
+                'appointment_date' => $this->bookingDate,
+                'status' => 'pending',
+                'symptoms' => $this->bookingReason,
+                'fee' => 0,
+                'payment_status' => 'pending',
+            ]);
+
+            session()->flash('booking_success', 'Appointment booked successfully! Waiting for doctor confirmation.');
+            
+            $this->closeBooking();
+            $this->loadAppointments();
+            
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to book appointment: ' . $e->getMessage());
+        }
     }
 
     public function cancelAppointment($appointmentId)
     {
-        $appointment = Appointment::where('patient_id', auth()->id())->find($appointmentId);
-        
-        if ($appointment && $appointment->status !== 'cancelled') {
-            $appointment->update(['status' => 'cancelled']);
-            $this->loadAppointments();
-            session()->flash('message', 'Appointment cancelled successfully.');
-        }
-    }
+        try {
+            $appointment = Appointment::where('patient_id', auth()->id())
+                ->where('id', $appointmentId)
+                ->first();
 
-    public function resetBooking()
-    {
-        $this->showBookingModal = false;
-        $this->reset([
-            'selectedDoctorId', 
-            'selectedDoctor', 
-            'bookingDate', 
-            'bookingTime', 
-            'bookingReason',
-            'suggestedSymptoms'
-        ]);
+            if ($appointment && $appointment->status === 'pending') {
+                $appointment->update(['status' => 'cancelled']);
+                session()->flash('message', 'Appointment cancelled successfully.');
+                $this->loadAppointments();
+            } else {
+                session()->flash('error', 'Cannot cancel this appointment.');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to cancel appointment. Please try again.');
+        }
     }
 
     public function render()
     {
-        $doctors = User::where('role', 'doctor')
-            ->with('doctorDetail')
-            ->get();
-
-        return view('livewire.patient.appointments', compact('doctors'));
+        return view('livewire.patient.appointments');
     }
 }
