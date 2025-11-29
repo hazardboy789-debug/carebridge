@@ -15,15 +15,16 @@ use App\Livewire\Admin\AdminDashboard;
 use App\Livewire\Admin\Doctors as AdminDoctor;
 use App\Livewire\Admin\Patients as AdminPatient;
 use App\Livewire\Admin\Pharmacy as AdminPharmacy;
-use App\Livewire\Admin\Transactions as AdminTransaction;
 use App\Livewire\Admin\Appointments as AdminAppointments;
+use App\Livewire\Admin\WalletManager;
+use App\Livewire\Admin\WalletTransactions;
 
 // Patient
 use App\Livewire\Patient\PatientDashboard;
 use App\Livewire\Patient\SymptomChecker;
 use App\Livewire\Patient\Appointments as PatientAppointments;
 use App\Livewire\Patient\Chat;
-use App\Livewire\Patient\Wallet;
+use App\Livewire\Patient\PatientWallet;
 use App\Livewire\Patient\Pharmacy as PatientPharmacy;
 
 // Doctor
@@ -32,7 +33,7 @@ use App\Livewire\Doctor\Dashboard;
 use App\Livewire\Doctor\Appointments as DoctorAppointments;
 use App\Livewire\Doctor\Chat as DoctorChat;
 use App\Livewire\Doctor\Patients as DoctorPatients;
-use App\Livewire\Doctor\Wallet as DoctorWallet;
+use App\Livewire\Doctor\DoctorWallet;
 use App\Livewire\Doctor\Profile as DoctorProfile;
 
 // Landing
@@ -92,8 +93,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/patients', AdminPatient::class)->name('patients');
         Route::get('/doctors', AdminDoctor::class)->name('doctors');
         Route::get('/pharmacy', AdminPharmacy::class)->name('pharmacy');
-        Route::get('/transactions', AdminTransaction::class)->name('transactions');
+        //Route::get('/transcations', AdminTransaction::class)->name('transcations');
         Route::get('/appointments', AdminAppointments::class)->name('appointments');
+        
+        // New Wallet Management Routes
+        Route::get('/wallet-management', WalletManager::class)->name('wallet.management');
+        Route::get('/wallet-transactions', WalletTransactions::class)->name('wallet.transactions');
 
     });
 
@@ -108,7 +113,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/symptom-checker', SymptomChecker::class)->name('symptom-checker');
         Route::get('/appointments', PatientAppointments::class)->name('appointments');
         Route::get('/chat', Chat::class)->name('chat');
-        Route::get('/wallet', Wallet::class)->name('wallet');
+        Route::get('/wallet', PatientWallet::class)->name('wallet');
         Route::get('/pharmacy', PatientPharmacy::class)->name('pharmacy');
 
     });
@@ -128,6 +133,5 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/profile', DoctorProfile::class)->name('profile');
 
     });
-
 
 });

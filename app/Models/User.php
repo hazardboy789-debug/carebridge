@@ -81,6 +81,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Wallet (one-to-one)
+     */
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
+
+    /**
      * Appointments where this user is the doctor
      */
     public function doctorAppointments()
@@ -267,6 +275,23 @@ class User extends Authenticatable
         return '<span class="badge bg-success">Active</span>';
     }
 
+    /**
+     * Get wallet balance with fallback
+     */
+    public function getWalletBalanceAttribute()
+    {
+        if (!$this->wallet) {
+            // Create wallet if it doesn't exist
+            $this->wallet()->create([
+                'balance' => 0,
+                'status' => 'active'
+            ]);
+            $this->load('wallet'); // Reload the relationship
+        }
+        
+        return $this->wallet->balance ?? 0;
+    }
+
     /* -----------------------------
      | Methods
      |------------------------------ */
@@ -315,5 +340,21 @@ class User extends Authenticatable
     {
         $this->update(['is_active' => true]);
         return $this;
+    }
+
+    /**
+     * Get or create wallet for user
+     */
+    public function getOrCreateWallet()
+    {
+        if (!$this->wallet) {
+            $this->wallet()->create([
+                'balance' => 0,
+                'status' => 'active'
+            ]);
+            $this->load('wallet');
+        }
+        
+        return $this->wallet;
     }
 }
