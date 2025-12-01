@@ -8,39 +8,32 @@ return new class extends Migration
 {
     public function up()
     {
-        // Add pharmacy_id to pharmacy_orders if it doesn't exist
-        if (Schema::hasTable('pharmacy_orders') && !Schema::hasColumn('pharmacy_orders', 'pharmacy_id')) {
-            Schema::table('pharmacy_orders', function (Blueprint $table) {
-                // CHANGE THIS LINE - remove constrained() temporarily
-                $table->unsignedBigInteger('pharmacy_id')->nullable()->after('user_id');
-                
-                // Set default value to 1 (the default pharmacy we'll create)
-                // This will be updated later when we add the foreign key
-            });
-        }
-
-        // Add delivery_type to pharmacy_orders if it doesn't exist
-        if (Schema::hasTable('pharmacy_orders') && !Schema::hasColumn('pharmacy_orders', 'delivery_type')) {
-            Schema::table('pharmacy_orders', function (Blueprint $table) {
-                $table->enum('delivery_type', ['pickup', 'delivery'])->default('pickup')->after('status');
-            });
-        }
-
-        // Add patient_notes to pharmacy_orders if it doesn't exist
-        if (Schema::hasTable('pharmacy_orders') && !Schema::hasColumn('pharmacy_orders', 'patient_notes')) {
-            Schema::table('pharmacy_orders', function (Blueprint $table) {
-                $table->text('patient_notes')->nullable()->after('shipping_address');
-            });
-        }
-
-        // Set default pharmacy_id for existing records
-        if (Schema::hasTable('pharmacy_orders') && Schema::hasColumn('pharmacy_orders', 'pharmacy_id')) {
-            DB::table('pharmacy_orders')->whereNull('pharmacy_id')->update(['pharmacy_id' => 1]);
-        }
+        Schema::table('pharmacies', function (Blueprint $table) {
+            if (!Schema::hasColumn('pharmacies', 'owner_name')) {
+                $table->string('owner_name')->nullable()->after('name');
+            }
+            if (!Schema::hasColumn('pharmacies', 'latitude')) {
+                $table->decimal('latitude', 10, 8)->nullable()->after('address');
+            }
+            if (!Schema::hasColumn('pharmacies', 'longitude')) {
+                $table->decimal('longitude', 11, 8)->nullable()->after('latitude');
+            }
+            if (!Schema::hasColumn('pharmacies', 'opening_time')) {
+                $table->time('opening_time')->nullable()->after('longitude');
+            }
+            if (!Schema::hasColumn('pharmacies', 'closing_time')) {
+                $table->time('closing_time')->nullable()->after('opening_time');
+            }
+            if (!Schema::hasColumn('pharmacies', 'is_24_hours')) {
+                $table->boolean('is_24_hours')->default(false)->after('closing_time');
+            }
+        });
     }
 
     public function down()
     {
-        // Safe rollback - don't drop columns
+        Schema::table('pharmacies', function (Blueprint $table) {
+            $table->dropColumn(['owner_name', 'latitude', 'longitude', 'opening_time', 'closing_time', 'is_24_hours']);
+        });
     }
 };

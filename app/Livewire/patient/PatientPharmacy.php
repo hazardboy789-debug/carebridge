@@ -24,16 +24,21 @@ class PatientPharmacy extends Component
     public $userLatitude = null;
     public $userLongitude = null;
     public $showMap = false;
+    public $isLocationEnabled = false; // New property
 
     public function mount()
     {
         $this->cart = session()->get('pharmacy_cart', []);
         $this->getUserLocation();
+        
+        // Check if location was previously enabled
+        if (session()->has('user_latitude') && session()->has('user_longitude')) {
+            $this->isLocationEnabled = true;
+        }
     }
 
     public function getUserLocation()
     {
-        // This will be populated by JavaScript geolocation
         $this->userLatitude = session()->get('user_latitude');
         $this->userLongitude = session()->get('user_longitude');
     }
@@ -47,8 +52,11 @@ class PatientPharmacy extends Component
     {
         $this->userLatitude = $lat;
         $this->userLongitude = $lng;
+        $this->isLocationEnabled = true;
         session()->put('user_latitude', $lat);
         session()->put('user_longitude', $lng);
+        
+        $this->dispatch('show-toast', type: 'success', message: 'Location enabled successfully!');
     }
 
     public function findNearbyPharmacies()
@@ -58,6 +66,12 @@ class PatientPharmacy extends Component
             return;
         }
         $this->showMap = true;
+        $this->dispatch('refresh-map');
+    }
+
+    public function hideMap()
+    {
+        $this->showMap = false;
     }
 
     public function calculateDistance($lat1, $lon1, $lat2, $lon2)
@@ -73,9 +87,17 @@ class PatientPharmacy extends Component
         return $earthRadius * $c;
     }
 
+    public function selectPharmacy($pharmacyId)
+    {
+        $this->selectedPharmacy = Pharmacy::with(['medicineStock' => function($query) {
+            $query->where('quantity_available', '>', 0);
+        }])->find($pharmacyId);
+        
+        $this->dispatch('scroll-to-pharmacy-details');
+    }
+
     public function render()
     {
-        // FIXED: Use paginate() directly on the query, not after get()
         $pharmaciesQuery = Pharmacy::where('status', 'approved')
             ->when($this->search, function($query) {
                 $query->where('name', 'like', '%' . $this->search . '%')
@@ -85,7 +107,6 @@ class PatientPharmacy extends Component
                 $query->where('quantity_available', '>', 0);
             }]);
 
-        // Get all pharmacies for distance calculation
         $allPharmacies = $pharmaciesQuery->get();
 
         // Calculate distances if user location is available
@@ -115,6 +136,7 @@ class PatientPharmacy extends Component
         ]);
     }
 
+    // Cart methods remain the same
     public function addToCart($medicineId)
     {
         $medicine = MedicineStock::find($medicineId);
