@@ -3,11 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\RegisteredUserController;
 
-// Controllers
-use App\Http\Controllers\RegisterController;
-
-// Livewire v3 Components - FIXED IMPORTS
+// Livewire v3 Components
 use App\Livewire\CustomLogin;
 
 // Admin
@@ -25,10 +23,9 @@ use App\Livewire\Patient\SymptomChecker;
 use App\Livewire\Patient\Appointments as PatientAppointments;
 use App\Livewire\Patient\Chat;
 use App\Livewire\Patient\PatientWallet;
-use App\Livewire\Patient\Pharmacy as PatientPharmacy;
+use App\Livewire\Patient\PatientPharmacy;
 
 // Doctor
-//use App\Livewire\Doctor\DoctorDashboard;
 use App\Livewire\Doctor\Dashboard;
 use App\Livewire\Doctor\Appointments as DoctorAppointments;
 use App\Livewire\Doctor\Chat as DoctorChat;
@@ -57,9 +54,21 @@ Route::get('/doctors', DoctorPage::class)->name('doctors');
 Route::get('/contact', ContactPage::class)->name('contact');
 Route::get('/appointment', ApointmentPage::class)->name('appointment');
 
-// Authentication
-Route::get('/login', CustomLogin::class)->name('login')->middleware('guest');
-Route::post('/register', [RegisterController::class, 'register'])->name('register')->middleware('guest');
+/*
+|--------------------------------------------------------------------------
+| Authentication Routes (Fixed Version)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('guest')->group(function () {
+    // Login
+    Route::get('/login', CustomLogin::class)->name('login');
+    
+    // Registration - Using Laravel Fortify/Jetstream default
+    Route::get('/register', function () {
+        return view('auth.register');
+    })->name('register');
+});
 
 // Logout
 Route::post('/logout', function (Request $request) {
@@ -88,18 +97,15 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     |--------------------------------------------------------------------------
     */
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
-
         Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
         Route::get('/patients', AdminPatient::class)->name('patients');
         Route::get('/doctors', AdminDoctor::class)->name('doctors');
         Route::get('/pharmacy', AdminPharmacy::class)->name('pharmacy');
-        //Route::get('/transcations', AdminTransaction::class)->name('transcations');
         Route::get('/appointments', AdminAppointments::class)->name('appointments');
         
-        // New Wallet Management Routes
+        // Wallet Management Routes
         Route::get('/wallet-management', WalletManager::class)->name('wallet.management');
         Route::get('/wallet-transactions', WalletTransactions::class)->name('wallet.transactions');
-
     });
 
     /*
@@ -108,14 +114,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     |--------------------------------------------------------------------------
     */
     Route::middleware('role:patient')->prefix('patient')->name('patient.')->group(function () {
-
         Route::get('/dashboard', PatientDashboard::class)->name('dashboard');
         Route::get('/symptom-checker', SymptomChecker::class)->name('symptom-checker');
         Route::get('/appointments', PatientAppointments::class)->name('appointments');
         Route::get('/chat', Chat::class)->name('chat');
         Route::get('/wallet', PatientWallet::class)->name('wallet');
         Route::get('/pharmacy', PatientPharmacy::class)->name('pharmacy');
-
     });
 
     /*
@@ -124,14 +128,11 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     |--------------------------------------------------------------------------
     */
     Route::middleware('role:doctor')->prefix('doctor')->name('doctor.')->group(function () {
-
         Route::get('/dashboard', Dashboard::class)->name('dashboard');
         Route::get('/appointments', DoctorAppointments::class)->name('appointments');
         Route::get('/chat', DoctorChat::class)->name('chat');
         Route::get('/patients', DoctorPatients::class)->name('patients');
         Route::get('/wallet', DoctorWallet::class)->name('wallet');
         Route::get('/profile', DoctorProfile::class)->name('profile');
-
     });
-
 });

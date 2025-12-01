@@ -33,7 +33,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('{{ asset('/images/bgproduct.jpg') }}');
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             background-size: cover;
             background-position: center;
             z-index: 0;

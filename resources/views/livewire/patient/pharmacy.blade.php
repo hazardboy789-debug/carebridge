@@ -1,144 +1,159 @@
-<div class="flex-1 p-8">
-    <div class="flex flex-col gap-8">
-        <!-- Page Heading -->
-        <div class="flex flex-wrap items-center justify-between gap-4">
-            <div class="flex flex-col gap-1">
-                <p class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold tracking-tight">
-                    Pharmacy
-                </p>
-                <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal">
-                    Manage your prescriptions and medication orders.
-                </p>
+<div class="p-6">
+    <h1 class="text-2xl font-semibold mb-6">Find Pharmacy & Medicines</h1>
+
+    <!-- Location Services -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h3 class="font-semibold text-blue-800">Find Pharmacies Near You</h3>
+                <p class="text-blue-600 text-sm">Allow location access to find the closest pharmacies</p>
             </div>
-            <button class="flex min-w-[84px] items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary text-white text-sm font-bold gap-2">
-                <span class="material-symbols-outlined">add</span>
-                <span class="truncate">New Order</span>
-            </button>
-        </div>
-
-        <!-- Pharmacy Content -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column -->
-            <div class="lg:col-span-2 flex flex-col gap-8">
-                <!-- Current Prescriptions -->
-                <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold">
-                            Current Prescriptions
-                        </h2>
-                        <a class="text-primary text-sm font-bold hover:underline" href="#">View All</a>
-                    </div>
-                    
-                    <div class="flex flex-col gap-4">
-                        @for($i = 0; $i < 3; $i++)
-                        <div class="flex items-center justify-between p-4 rounded-lg bg-background-light dark:bg-background-dark">
-                            <div class="flex items-center gap-3">
-                                <div class="flex items-center justify-center rounded-full size-12 bg-primary/10 dark:bg-primary/20 text-primary">
-                                    <span class="material-symbols-outlined">pill</span>
-                                </div>
-                                <div>
-                                    <p class="text-text-light-primary dark:text-text-dark-primary font-semibold">
-                                        Metformin 500mg
-                                    </p>
-                                    <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
-                                        Take one tablet twice daily with meals
-                                    </p>
-                                    <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs mt-1">
-                                        Refills: 2 remaining • Expires: Dec 15, 2024
-                                    </p>
-                                </div>
-                            </div>
-                            <button class="flex items-center justify-center rounded-lg h-9 px-4 bg-primary text-white text-sm font-medium">
-                                Order Refill
-                            </button>
-                        </div>
-                        @endfor
-                    </div>
-                </div>
-
-                <!-- Pharmacy Locations -->
-                <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold mb-6">
-                        Nearby Pharmacies
-                    </h2>
-                    <div class="flex flex-col gap-4">
-                        @for($i = 0; $i < 2; $i++)
-                        <div class="flex items-center gap-4 p-4 rounded-lg bg-background-light dark:bg-background-dark">
-                            <div class="flex items-center justify-center rounded-full size-12 bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400">
-                                <span class="material-symbols-outlined">local_pharmacy</span>
-                            </div>
-                            <div class="flex-1">
-                                <p class="text-text-light-primary dark:text-text-dark-primary font-semibold">
-                                    CVS Pharmacy #1234
-                                </p>
-                                <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
-                                    123 Main Street, Anytown • 0.8 miles away
-                                </p>
-                                <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs mt-1">
-                                    Open until 10:00 PM • 24/7 Pharmacy
-                                </p>
-                            </div>
-                            <button class="flex items-center justify-center rounded-lg h-9 px-4 bg-primary text-white text-sm font-medium">
-                                Directions
-                            </button>
-                        </div>
-                        @endfor
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column -->
-            <div class="lg:col-span-1 flex flex-col gap-8">
-                <!-- Quick Actions -->
-                <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold mb-4">
-                        Quick Actions
-                    </h2>
-                    <div class="flex flex-col gap-3">
-                        <button class="flex w-full items-center justify-center gap-2 rounded-lg h-11 px-4 bg-primary text-white text-sm font-bold">
-                            <span class="material-symbols-outlined">upload</span>
-                            Upload Prescription
-                        </button>
-                        <button class="flex w-full items-center justify-center gap-2 rounded-lg h-11 px-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light-primary dark:text-text-dark-primary text-sm font-bold hover:bg-gray-50 dark:hover:bg-slate-700">
-                            <span class="material-symbols-outlined">history</span>
-                            Order History
-                        </button>
-                        <button class="flex w-full items-center justify-center gap-2 rounded-lg h-11 px-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light-primary dark:text-text-dark-primary text-sm font-bold hover:bg-gray-50 dark:hover:bg-slate-700">
-                            <span class="material-symbols-outlined">local_shipping</span>
-                            Track Delivery
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Order Status -->
-                <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold mb-4">
-                        Current Orders
-                    </h2>
-                    <div class="flex flex-col gap-3">
-                        <div class="p-3 rounded-lg bg-background-light dark:bg-background-dark">
-                            <div class="flex items-center justify-between mb-2">
-                                <p class="text-text-light-primary dark:text-text-dark-primary font-semibold text-sm">
-                                    Order #PH-789123
-                                </p>
-                                <span class="bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300 text-xs px-2 py-1 rounded-full">
-                                    Processing
-                                </span>
-                            </div>
-                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs">
-                                Metformin 500mg, Lisinopril 10mg
-                            </p>
-                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs mt-1">
-                                Estimated delivery: Tomorrow
-                            </p>
-                        </div>
-                        
-                        <button class="flex w-full items-center justify-center gap-2 rounded-lg h-9 px-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light-primary dark:text-text-dark-primary text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700">
-                            Track All Orders
-                        </button>
-                    </div>
-                </div>
-            </div>
+            @if(!$userLocation)
+                <button wire:click="requestLocation" 
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                    Enable Location
+                </button>
+            @else
+                <button wire:click="findNearbyPharmacies" 
+                        class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition">
+                    Show Nearby Pharmacies
+                </button>
+            @endif
         </div>
     </div>
+
+    <!-- Search Bar -->
+    <div class="mb-6">
+        <input type="text" wire:model.live="search" 
+               placeholder="Search pharmacies by name or location..."
+               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+    </div>
+
+    <!-- Google Maps Integration -->
+    @if($showMap && $userLocation)
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <h3 class="text-lg font-semibold mb-4">Nearby Pharmacies Map</h3>
+        <div id="pharmacy-map" class="w-full h-64 rounded-lg border border-gray-300"></div>
+    </div>
+    @endif
+
+    <!-- Pharmacy Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        @foreach($pharmacies as $pharmacy)
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">{{ $pharmacy->name }}</h3>
+                    <div class="flex flex-col items-end gap-1">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                            {{ $pharmacy->is_open ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                            {{ $pharmacy->is_open ? 'Open' : 'Closed' }}
+                        </span>
+                        @if(isset($pharmacy->distance))
+                            <span class="text-xs text-gray-500">{{ number_format($pharmacy->distance, 1) }} km away</span>
+                        @endif
+                    </div>
+                </div>
+                
+                <div class="space-y-2 text-sm text-gray-600 mb-4">
+                    <p class="flex items-center">
+                        <span class="material-symbols-outlined text-base mr-2">location_on</span>
+                        {{ $pharmacy->address }}
+                    </p>
+                    <p class="flex items-center">
+                        <span class="material-symbols-outlined text-base mr-2">call</span>
+                        {{ $pharmacy->phone }}
+                    </p>
+                    <p class="flex items-center">
+                        <span class="material-symbols-outlined text-base mr-2">schedule</span>
+                        {{ $pharmacy->is_24_hours ? '24 Hours' : $pharmacy->opening_time . ' - ' . $pharmacy->closing_time }}
+                    </p>
+                </div>
+
+                <div class="flex gap-2">
+                    <button wire:click="selectPharmacy({{ $pharmacy->id }})" 
+                            class="flex-1 bg-primary text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-primary-dark transition">
+                        View Medicines
+                    </button>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ $pharmacy->latitude }},{{ $pharmacy->longitude }}" 
+                       target="_blank"
+                       class="bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition flex items-center">
+                        <span class="material-symbols-outlined text-base mr-1">directions</span>
+                        Directions
+                    </a>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    <!-- Selected Pharmacy Medicines Section (keep existing) -->
+    @if($selectedPharmacy)
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <!-- ... existing medicine selection code ... -->
+    </div>
+    @endif
+
+    <!-- Cart Section (keep existing) -->
+    <!-- ... existing cart code ... -->
 </div>
+
+@push('scripts')
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&libraries=places"></script>
+<script>
+document.addEventListener('livewire:init', () => {
+    // Request user location
+    Livewire.on('request-user-location', () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    @this.setUserLocation(lat, lng);
+                },
+                (error) => {
+                    console.error('Geolocation error:', error);
+                    alert('Unable to get your location. Please enable location services.');
+                }
+            );
+        } else {
+            alert('Geolocation is not supported by this browser.');
+        }
+    });
+
+    // Initialize Google Maps
+    @if($showMap && $userLocation)
+    initMap();
+    @endif
+
+    function initMap() {
+        const userLocation = { lat: @json($userLatitude), lng: @json($userLongitude) };
+        
+        const map = new google.maps.Map(document.getElementById('pharmacy-map'), {
+            zoom: 12,
+            center: userLocation,
+        });
+
+        // Add user location marker
+        new google.maps.Marker({
+            position: userLocation,
+            map: map,
+            title: 'Your Location',
+            icon: {
+                url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+            }
+        });
+
+        // Add pharmacy markers
+        @foreach($pharmacies as $pharmacy)
+            new google.maps.Marker({
+                position: { lat: {{ $pharmacy->latitude }}, lng: {{ $pharmacy->longitude }} },
+                map: map,
+                title: '{{ $pharmacy->name }}',
+                icon: {
+                    url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                }
+            });
+        @endforeach
+    }
+});
+</script>
+@endpush

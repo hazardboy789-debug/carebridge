@@ -4,46 +4,47 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PharmacyOrder extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'order_number',
-        'total_amount',
-        'status',
-        'shipping_address',
-        'payment_status',
-        'notes',
+        'user_id', 'pharmacy_id', 'order_number', 'total_amount', 
+        'status', 'delivery_type', 'shipping_address', 'patient_notes',
+        'payment_status', 'notes'
     ];
 
     protected $casts = [
         'total_amount' => 'decimal:2',
     ];
 
-    public function user(): BelongsTo
+    // Status constants
+    const STATUS_PENDING = 'pending';
+    const STATUS_CONFIRMED = 'confirmed';
+    const STATUS_PREPARING = 'preparing';
+    const STATUS_READY = 'ready';
+    const STATUS_DISPATCHED = 'dispatched';
+    const STATUS_DELIVERED = 'delivered';
+    const STATUS_CANCELLED = 'cancelled';
+
+    // Payment status constants
+    const PAYMENT_PENDING = 'pending';
+    const PAYMENT_PAID = 'paid';
+    const PAYMENT_FAILED = 'failed';
+
+    public function patient()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function items(): HasMany
+    public function pharmacy()
     {
-        return $this->hasMany(PharmacyOrderItem::class);
+        return $this->belongsTo(Pharmacy::class);
     }
 
-    // Scope for pending orders
-    public function scopePending($query)
+    public function items()
     {
-        return $query->where('status', 'pending');
-    }
-
-    // Generate order number
-    public static function generateOrderNumber()
-    {
-        return 'ORD-' . date('Ymd') . '-' . str_pad(static::count() + 1, 4, '0', STR_PAD_LEFT);
+        return $this->hasMany(OrderItem::class);
     }
 }
