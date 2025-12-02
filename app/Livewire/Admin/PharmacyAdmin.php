@@ -5,18 +5,17 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Pharmacy;
+use Illuminate\Support\Facades\Schema;
 use App\Models\MedicineStock;
 use App\Models\PharmacyOrder;
 use Livewire\Attributes\Layout;
 
 #[Layout('components.layouts.admin')]
-
 class PharmacyAdmin extends Component
 {
     use WithPagination;
 
     public $search = '';
-    public $pharmacies;
     public $selectedPharmacy = null;
     public $medicineName = '';
     public $medicinePrice = '';
@@ -24,6 +23,14 @@ class PharmacyAdmin extends Component
     public $medicineDescription = '';
     public $showOrders = false;
     public $orders = [];
+    
+    // Add these properties for pharmacy form
+    public $showAddPharmacyForm = false;
+    public $newPharmacyName = '';
+    public $newPharmacyAddress = '';
+    public $newPharmacyPhone = '';
+    public $newPharmacyLatitude = '';
+    public $newPharmacyLongitude = '';
 
     public function render()
     {
@@ -34,10 +41,10 @@ class PharmacyAdmin extends Component
                       ->orWhere('phone', 'like', '%' . $this->search . '%');
             });
 
-        $this->pharmacies = $query->paginate(10);
+        $pharmacies = $query->paginate(10);
 
         return view('livewire.admin.pharmacy', [
-            'pharmacies' => $this->pharmacies,
+            'pharmacies' => $pharmacies,
         ]);
     }
 
@@ -65,7 +72,7 @@ class PharmacyAdmin extends Component
 
         $this->resetMedicineForm();
         $this->selectPharmacy($this->selectedPharmacy->id); // Refresh
-        session()->flash('message', 'Medicine added successfully!');
+        $this->dispatch('show-toast', type: 'success', message: 'Medicine added successfully!');
     }
 
     public function updateMedicineStock($medicineId, $quantity)
@@ -73,7 +80,7 @@ class PharmacyAdmin extends Component
         $medicine = MedicineStock::find($medicineId);
         if ($medicine) {
             $medicine->update(['quantity_available' => $quantity]);
-            session()->flash('message', 'Stock updated successfully!');
+            $this->dispatch('show-toast', type: 'success', message: 'Stock updated successfully!');
         }
     }
 
@@ -81,7 +88,7 @@ class PharmacyAdmin extends Component
     {
         MedicineStock::find($medicineId)->delete();
         $this->selectPharmacy($this->selectedPharmacy->id); // Refresh
-        session()->flash('message', 'Medicine deleted successfully!');
+        $this->dispatch('show-toast', type: 'success', message: 'Medicine deleted successfully!');
     }
 
     public function togglePharmacyStatus($pharmacyId)
@@ -89,7 +96,7 @@ class PharmacyAdmin extends Component
         $pharmacy = Pharmacy::find($pharmacyId);
         if ($pharmacy) {
             $pharmacy->update(['status' => $pharmacy->status === 'approved' ? 'pending' : 'approved']);
-            session()->flash('message', 'Pharmacy status updated!');
+            $this->dispatch('show-toast', type: 'success', message: 'Pharmacy status updated!');
         }
     }
 
@@ -108,7 +115,7 @@ class PharmacyAdmin extends Component
         $order = PharmacyOrder::find($orderId);
         if ($order) {
             $order->update(['status' => $status]);
-            session()->flash('message', 'Order status updated!');
+            $this->dispatch('show-toast', type: 'success', message: 'Order status updated!');
         }
     }
 
@@ -122,22 +129,37 @@ class PharmacyAdmin extends Component
             'newPharmacyLongitude' => 'required|numeric',
         ]);
 
-        Pharmacy::create([
+        $data = [
             'name' => $this->newPharmacyName,
             'address' => $this->newPharmacyAddress,
             'phone' => $this->newPharmacyPhone,
-            'latitude' => $this->newPharmacyLatitude,
-            'longitude' => $this->newPharmacyLongitude,
             'status' => 'approved',
             'is_open' => true,
-            'opening_time' => '08:00:00',
-            'closing_time' => '22:00:00',
-            'is_24_hours' => false,
-        ]);
+        ];
 
-        $this->reset(['newPharmacyName', 'newPharmacyAddress', 'newPharmacyPhone', 
-                     'newPharmacyLatitude', 'newPharmacyLongitude']);
-        session()->flash('message', 'Pharmacy added successfully!');
+        // Only include latitude/longitude if the DB column exists
+        if (Schema::hasColumn('pharmacies', 'latitude')) {
+            $data['latitude'] = $this->newPharmacyLatitude;
+        }
+        if (Schema::hasColumn('pharmacies', 'longitude')) {
+            $data['longitude'] = $this->newPharmacyLongitude;
+        }
+
+        // Add opening/closing times only if columns exist
+        if (Schema::hasColumn('pharmacies', 'opening_time')) {
+            $data['opening_time'] = '08:00:00';
+        }
+        if (Schema::hasColumn('pharmacies', 'closing_time')) {
+            $data['closing_time'] = '22:00:00';
+        }
+        if (Schema::hasColumn('pharmacies', 'is_24_hours')) {
+            $data['is_24_hours'] = false;
+        }
+
+        Pharmacy::create($data);
+
+        $this->resetNewPharmacyForm();
+        $this->dispatch('show-toast', type: 'success', message: 'Pharmacy added successfully!');
     }
 
     public function deletePharmacy($pharmacyId)
@@ -148,7 +170,7 @@ class PharmacyAdmin extends Component
         // Then delete the pharmacy
         Pharmacy::find($pharmacyId)->delete();
         
-        session()->flash('message', 'Pharmacy deleted successfully!');
+        $this->dispatch('show-toast', type: 'success', message: 'Pharmacy deleted successfully!');
         $this->selectedPharmacy = null;
     }
 
@@ -158,5 +180,15 @@ class PharmacyAdmin extends Component
         $this->medicinePrice = '';
         $this->medicineQuantity = '';
         $this->medicineDescription = '';
+    }
+
+    private function resetNewPharmacyForm()
+    {
+        $this->newPharmacyName = '';
+        $this->newPharmacyAddress = '';
+        $this->newPharmacyPhone = '';
+        $this->newPharmacyLatitude = '';
+        $this->newPharmacyLongitude = '';
+        $this->showAddPharmacyForm = false;
     }
 }
