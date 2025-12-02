@@ -26,6 +26,11 @@ class PatientPharmacy extends Component
     public $showMap = false;
     public $isLocationEnabled = false; // New property
 
+    protected $listeners = [
+        'selectPharmacy',
+        'setUserLocation',
+    ];
+
     public function mount()
     {
         $this->cart = session()->get('pharmacy_cart', []);

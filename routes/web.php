@@ -12,7 +12,7 @@ use App\Livewire\CustomLogin;
 use App\Livewire\Admin\AdminDashboard;
 use App\Livewire\Admin\Doctors as AdminDoctor;
 use App\Livewire\Admin\Patients as AdminPatient;
-use App\Livewire\Admin\Pharmacy as AdminPharmacy;
+use App\Livewire\Admin\PharmacyAdmin;
 use App\Livewire\Admin\Appointments as AdminAppointments;
 use App\Livewire\Admin\WalletManager;
 use App\Livewire\Admin\WalletTransactions;
@@ -100,7 +100,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
         Route::get('/patients', AdminPatient::class)->name('patients');
         Route::get('/doctors', AdminDoctor::class)->name('doctors');
-        Route::get('/pharmacy', AdminPharmacy::class)->name('pharmacy');
+        Route::get('/pharmacy', PharmacyAdmin::class)->name('pharmacy');
         Route::get('/appointments', AdminAppointments::class)->name('appointments');
         
         // Wallet Management Routes

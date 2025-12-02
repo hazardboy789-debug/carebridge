@@ -1,4 +1,28 @@
 <div class="p-6">
+    {{-- Leaflet CSS and JS CDN --}}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+            crossorigin=""></script>
+    
+    <style>
+        .leaflet-container {
+            z-index: 1;
+        }
+        .custom-div-icon {
+            background: none;
+            border: none;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+
     <!-- Header -->
     <div class="mb-8">
         <h1 class="text-2xl font-bold text-gray-900 mb-2">Find Pharmacy & Medicines</h1>
@@ -373,49 +397,36 @@
     @endif
 </div>
 
-@push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<style>
-    .leaflet-container {
-        z-index: 1;
-    }
-    .custom-div-icon {
-        background: none;
-        border: none;
-    }
-    .line-clamp-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-</style>
-@endpush
-
-@push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 document.addEventListener('livewire:init', () => {
+    // Check if Leaflet is loaded (it should be via CDN)
+    if (typeof L === 'undefined') {
+        console.error('Leaflet is not loaded. Make sure CDN links are included.');
+        return;
+    }
+
     let map = null;
     let userMarker = null;
     let pharmacyMarkers = [];
 
-    // Request user location
-    Livewire.on('request-user-location', () => {
+    // Request user location - server dispatches a browser event
+    window.addEventListener('request-user-location', () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
-                    @this.setUserLocation(lat, lng);
+
+                    // Notify server (component listens) and initialize map immediately
+                    if (window.Livewire && typeof Livewire.emit === 'function') {
+                        Livewire.emit('setUserLocation', lat, lng);
+                    }
+
+                    initMap(lat, lng);
                 },
                 (error) => {
                     console.error('Geolocation error:', error);
-                    // Show error toast using Livewire's event
-                    @this.dispatch('show-toast', {
-                        type: 'error',
-                        message: 'Unable to get your location. Please enable location services in your browser settings.'
-                    });
+                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { type: 'error', message: 'Unable to get your location. Please enable location services.' } }));
                 },
                 {
                     enableHighAccuracy: true,
@@ -424,10 +435,7 @@ document.addEventListener('livewire:init', () => {
                 }
             );
         } else {
-            @this.dispatch('show-toast', {
-                type: 'error',
-                message: 'Geolocation is not supported by your browser.'
-            });
+            window.dispatchEvent(new CustomEvent('show-toast', { detail: { type: 'error', message: 'Geolocation is not supported by your browser.' } }));
         }
     });
 
@@ -436,7 +444,7 @@ document.addEventListener('livewire:init', () => {
         initMap();
     });
 
-    function initMap() {
+    function initMap(overrideLat = null, overrideLng = null) {
         const mapElement = document.getElementById('pharmacy-map');
         if (!mapElement) return;
 
@@ -451,104 +459,134 @@ document.addEventListener('livewire:init', () => {
         pharmacyMarkers.forEach(marker => marker.remove());
         pharmacyMarkers = [];
 
-        const userLat = @json($userLatitude);
-        const userLng = @json($userLongitude);
-        
-        if (!userLat || !userLng) {
-            console.error('User location not available');
-            return;
-        }
+        const serverLat = @json($userLatitude);
+        const serverLng = @json($userLongitude);
+        const userLat = overrideLat ?? serverLat;
+        const userLng = overrideLng ?? serverLng;
 
-        // Initialize map
-        map = L.map('pharmacy-map').setView([userLat, userLng], 13);
-        
+        // Initialize map (fallback center if no user location)
+        map = L.map('pharmacy-map').setView([userLat || 0, userLng || 0], userLat && userLng ? 13 : 2);
+
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19,
         }).addTo(map);
-        
-        // Add user location marker
-        const userIcon = L.divIcon({
-            html: `
-                <div class="relative">
-                    <div class="w-8 h-8 bg-blue-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center">
-                        <div class="w-2 h-2 bg-white rounded-full"></div>
+
+        // Add user location marker if available
+        if (userLat && userLng) {
+            const userIcon = L.divIcon({
+                html: `
+                    <div class="relative">
+                        <div class="w-8 h-8 bg-blue-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center">
+                            <div class="w-2 h-2 bg-white rounded-full"></div>
+                        </div>
+                        <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded whitespace-nowrap">
+                            Your Location
+                        </div>
                     </div>
-                    <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded whitespace-nowrap">
-                        Your Location
-                    </div>
-                </div>
-            `,
-            className: 'custom-div-icon',
-            iconSize: [64, 64],
-            iconAnchor: [32, 32],
-            popupAnchor: [0, -32]
-        });
-        
-        userMarker = L.marker([userLat, userLng], { icon: userIcon })
-            .addTo(map)
-            .bindPopup('<strong>Your Location</strong><br>This is where you are currently located.');
+                `,
+                className: 'custom-div-icon',
+                iconSize: [64, 64],
+                iconAnchor: [32, 32],
+                popupAnchor: [0, -32]
+            });
+
+            userMarker = L.marker([userLat, userLng], { icon: userIcon })
+                .addTo(map)
+                .bindPopup('<strong>Your Location</strong><br>This is where you are currently located.');
+        }
 
         // Add pharmacy markers from Livewire data
-        @this.get('pharmacies').data.forEach(pharmacy => {
-            if (pharmacy.latitude && pharmacy.longitude) {
-                const pharmacyIcon = L.divIcon({
+        @php
+            $pharmaciesData = $pharmacies->items(); // Get paginated items
+        @endphp
+        
+        @foreach($pharmaciesData as $pharmacy)
+            @if($pharmacy->latitude && $pharmacy->longitude)
+                const marker{{ $pharmacy->id }} = L.marker([{{ $pharmacy->latitude }}, {{ $pharmacy->longitude }}], { 
+                    icon: L.divIcon({
+                        html: `
+                            <div class="relative">
+                                <div class="w-10 h-10 bg-red-500 rounded-full border-3 border-white shadow-lg flex items-center justify-center">
+                                    <div class="text-white text-xs font-bold">P</div>
+                                </div>
+                                <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 bg-red-500 text-white text-xs px-2 py-0.5 rounded whitespace-nowrap">
+                                    {{ strlen($pharmacy->name) > 15 ? substr($pharmacy->name, 0, 15) . '...' : $pharmacy->name }}
+                                </div>
+                            </div>
+                        `,
+                        className: 'custom-div-icon',
+                        iconSize: [80, 80],
+                        iconAnchor: [40, 40],
+                        popupAnchor: [0, -40]
+                    })
+                })
+                .addTo(map)
+                .bindPopup(`
+                    <div class="p-2 min-w-[200px]">
+                        <strong class="text-lg">{{ $pharmacy->name }}</strong>
+                        <p class="text-sm text-gray-600 mt-1">{{ $pharmacy->address }}</p>
+                        <div class="mt-2 space-y-1">
+                            @if($pharmacy->phone)
+                                <p class="text-sm"><strong>Phone:</strong> {{ $pharmacy->phone }}</p>
+                            @endif
+                            <p class="text-sm"><strong>Status:</strong> <span class="{{ $pharmacy->is_open ? 'text-green-600' : 'text-red-600' }}">{{ $pharmacy->is_open ? 'Open' : 'Closed' }}</span></p>
+                            @if(isset($pharmacy->distance))
+                                <p class="text-sm"><strong>Distance:</strong> {{ number_format($pharmacy->distance, 1) }} km</p>
+                            @endif
+                        </div>
+                        <div class="mt-3 flex flex-col gap-2">
+                            <button onclick="Livewire.emit('selectPharmacy', {{ $pharmacy->id }})" 
+                                    class="px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition w-full">
+                                View Medicines
+                            </button>
+                            <a href="https://www.openstreetmap.org/directions?from=&to={{ $pharmacy->latitude }},{{ $pharmacy->longitude }}" 
+                               target="_blank"
+                               class="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition text-center block">
+                                Get Directions
+                            </a>
+                        </div>
+                    </div>
+                `);
+                
+                pharmacyMarkers.push(marker{{ $pharmacy->id }});
+            @endif
+        @endforeach
+
+        // Fit bounds to show all markers
+        if (pharmacyMarkers.length > 0 || userMarker) {
+            const groupMembers = [];
+            if (userMarker) groupMembers.push(userMarker);
+            groupMembers.push(...pharmacyMarkers);
+            const group = new L.FeatureGroup(groupMembers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+
+        // Add click event to recenter on user location (and notify server)
+        map.on('click', function(e) {
+            if (!userMarker) {
+                const userIcon = L.divIcon({
                     html: `
                         <div class="relative">
-                            <div class="w-10 h-10 bg-red-500 rounded-full border-3 border-white shadow-lg flex items-center justify-center">
-                                <div class="text-white text-xs font-bold">P</div>
-                            </div>
-                            <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 bg-red-500 text-white text-xs px-2 py-0.5 rounded whitespace-nowrap">
-                                ${pharmacy.name.length > 15 ? pharmacy.name.substring(0, 15) + '...' : pharmacy.name}
+                            <div class="w-8 h-8 bg-blue-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center">
+                                <div class="w-2 h-2 bg-white rounded-full"></div>
                             </div>
                         </div>
                     `,
                     className: 'custom-div-icon',
-                    iconSize: [80, 80],
-                    iconAnchor: [40, 40],
-                    popupAnchor: [0, -40]
+                    iconSize: [64, 64],
+                    iconAnchor: [32, 32],
+                    popupAnchor: [0, -32]
                 });
-                
-                const marker = L.marker([pharmacy.latitude, pharmacy.longitude], { icon: pharmacyIcon })
-                    .addTo(map)
-                    .bindPopup(`
-                        <div class="p-2">
-                            <strong class="text-lg">${pharmacy.name}</strong>
-                            <p class="text-sm text-gray-600 mt-1">${pharmacy.address}</p>
-                            <div class="mt-2 space-y-1">
-                                ${pharmacy.phone ? `<p class="text-sm"><strong>Phone:</strong> ${pharmacy.phone}</p>` : ''}
-                                <p class="text-sm"><strong>Status:</strong> <span class="${pharmacy.is_open ? 'text-green-600' : 'text-red-600'}">${pharmacy.is_open ? 'Open' : 'Closed'}</span></p>
-                                ${pharmacy.distance ? `<p class="text-sm"><strong>Distance:</strong> ${pharmacy.distance.toFixed(1)} km</p>` : ''}
-                            </div>
-                            <div class="mt-3 flex gap-2">
-                                <button onclick="window.Livewire.dispatch('selectPharmacy', {pharmacyId: ${pharmacy.id}})" 
-                                        class="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition">
-                                    View Medicines
-                                </button>
-                                <a href="https://www.openstreetmap.org/directions?from=&to=${pharmacy.latitude},${pharmacy.longitude}" 
-                                   target="_blank"
-                                   class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition">
-                                    Directions
-                                </a>
-                            </div>
-                        </div>
-                    `);
-                
-                pharmacyMarkers.push(marker);
+                userMarker = L.marker(e.latlng, { icon: userIcon }).addTo(map);
+            } else {
+                userMarker.setLatLng(e.latlng);
             }
-        });
 
-        // Fit bounds to show all markers
-        if (pharmacyMarkers.length > 0) {
-            const group = new L.FeatureGroup([userMarker, ...pharmacyMarkers]);
-            map.fitBounds(group.getBounds().pad(0.1));
-        }
-
-        // Add click event to recenter on user location
-        map.on('click', function(e) {
-            userMarker.setLatLng(e.latlng);
-            @this.setUserLocation(e.latlng.lat, e.latlng.lng);
+            if (window.Livewire && typeof Livewire.emit === 'function') {
+                Livewire.emit('setUserLocation', e.latlng.lat, e.latlng.lng);
+            }
         });
     }
 
@@ -562,8 +600,14 @@ document.addEventListener('livewire:init', () => {
 
     // Initialize map if shown on page load
     @if($showMap && $userLatitude && $userLongitude)
-        setTimeout(initMap, 500); // Small delay to ensure DOM is ready
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(initMap, 100);
+            });
+        } else {
+            setTimeout(initMap, 100);
+        }
     @endif
 });
 </script>
-@endpush
