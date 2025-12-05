@@ -43,7 +43,8 @@ class Patients extends Component
             ->paginate(12);
 
         return view('livewire.doctor.patients', [
-            'patients' => $patients
+            'patients' => $patients,
+            'patientStats' => $this->getPatientStats(),
         ]);
     }
 
@@ -78,14 +79,17 @@ class Patients extends Component
             'total' => User::whereHas('patientAppointments', function ($query) use ($doctorId) {
                 $query->where('doctor_id', $doctorId);
             })->count(),
-            'active' => Appointment::where('doctor_id', $doctorId)
+            'active_month' => Appointment::where('doctor_id', $doctorId)
                 ->whereDate('appointment_date', '>=', now()->subMonth())
                 ->distinct('patient_id')
                 ->count('patient_id'),
-            'newThisMonth' => User::whereHas('patientAppointments', function ($query) use ($doctorId) {
+            'new_week' => User::whereHas('patientAppointments', function ($query) use ($doctorId) {
                 $query->where('doctor_id', $doctorId)
-                      ->whereMonth('created_at', now()->month);
+                      ->whereBetween('created_at', [now()->subWeek(), now()]);
             })->count(),
+            'follow_ups' => Appointment::where('doctor_id', $doctorId)
+                ->whereDate('appointment_date', '>=', now())
+                ->count(),
         ];
     }
 }

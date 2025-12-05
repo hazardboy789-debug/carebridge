@@ -45,7 +45,7 @@
                             <label class="block text-text-light-primary dark:text-text-dark-primary text-sm font-medium mb-2">
                                 Phone Number
                             </label>
-                            <input type="tel" wire:model="phone" class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg px-3 py-2 text-text-light-primary dark:text-text-dark-primary focus:outline-none focus:ring-2 focus:ring-primary">
+                            <input type="tel" wire:model="contact" class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg px-3 py-2 text-text-light-primary dark:text-text-dark-primary focus:outline-none focus:ring-2 focus:ring-primary">
                         </div>
                         
                         <div>
@@ -93,7 +93,7 @@
                                 Consultation Fee
                             </label>
                             <div class="relative">
-                                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-light-secondary dark:text-text-dark-secondary">$</span>
+                                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-light-secondary dark:text-text-dark-secondary">LKR</span>
                                 <input type="number" wire:model="consultationFee" class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg pl-8 pr-3 py-2 text-text-light-primary dark:text-text-dark-primary focus:outline-none focus:ring-2 focus:ring-primary">
                             </div>
                         </div>
@@ -149,18 +149,31 @@
                         Profile Photo
                     </h2>
                     <div class="flex flex-col items-center gap-4">
-                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-32" style='background-image: url("{{ $avatar ?? 'https://lh3.googleusercontent.com/aida-public/AB6AXuAPyLJw3e-STCG-Z_O80E32_v6PZpysy71S1oSZahWCaDPPQmvcgI2t0gUj2Zrs9mZc37Qkvjq-vINlPqEmVzUN_TA36pmlmevEoz2tgIGY5cI3MriGJn0lQxDKPb_26F2nPz6-be5413GVSx6e1MTVRDeDgpC9AXz4sPxw53iRSaKl4L-kNXkJUbxSJl3uRQ0yHwUqig5sZkkhDpfh1pOixCpqMsnux06f4TcFD80t8P87irVbR-BWMQobLI6VPC5xNX2hdY2Z0w' }}");'></div>
-                        <div class="flex gap-2">
-                            <button class="flex items-center justify-center gap-1 rounded-lg h-9 px-4 bg-primary text-white text-sm font-medium">
-                                <span class="material-symbols-outlined text-sm">upload</span>
-                                Upload New
-                            </button>
-                            <button class="flex items-center justify-center gap-1 rounded-lg h-9 px-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light-primary dark:text-text-dark-primary text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700">
-                                <span class="material-symbols-outlined text-sm">delete</span>
-                                Remove
-                            </button>
+                            <div class="rounded-full overflow-hidden w-32 h-32 bg-center bg-no-repeat bg-cover" style="background-image: url('{{ $avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($name ?? auth()->user()->name) }}')">
+                                @if(isset($photo))
+                                    <img src="{{ $photo->temporaryUrl() }}" alt="Avatar Preview" class="w-32 h-32 object-cover rounded-full">
+                                @endif
+                            </div>
+
+                            <div class="flex gap-2 items-center">
+                                <label for="photoInput" class="flex items-center justify-center gap-1 rounded-lg h-9 px-4 bg-primary text-white text-sm font-medium cursor-pointer">
+                                    <span class="material-symbols-outlined text-sm">upload</span>
+                                    Upload New
+                                </label>
+                                <input id="photoInput" type="file" wire:model="photo" accept="image/*" class="hidden">
+
+                                <button wire:click="deletePhoto" type="button" class="flex items-center justify-center gap-1 rounded-lg h-9 px-4 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light-primary dark:text-text-dark-primary text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700">
+                                    <span class="material-symbols-outlined text-sm">delete</span>
+                                    Remove
+                                </button>
+                            </div>
+
+                            @error('photo')
+                                <div class="text-red-500 text-sm">{{ $message }}</div>
+                            @enderror
+
+                            <div wire:loading wire:target="photo" class="text-xs text-text-light-secondary dark:text-text-dark-secondary">Uploading...</div>
                         </div>
-                    </div>
                 </div>
 
                 <!-- Account Status -->

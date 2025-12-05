@@ -20,6 +20,7 @@ class DoctorDetail extends Model
         'license_number',
         'experience_years',
         'description',
+        'consultation_fee',
         'status',
     ];
 

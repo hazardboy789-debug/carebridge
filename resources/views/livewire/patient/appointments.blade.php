@@ -84,7 +84,29 @@
                                 </p>
                                 <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm mb-2">
                                     <span class="material-symbols-outlined text-sm mr-1">calendar_month</span>
-                                    {{ \Carbon\Carbon::parse($appointment['appointment_date'])->format('M d, Y • h:i A') }}
+                                    @php
+                                        $datetime = null;
+                                        // Prefer scheduled_at if present
+                                        if (!empty($appointment['scheduled_at'])) {
+                                            $datetime = $appointment['scheduled_at'];
+                                        } else {
+                                            $datePart = $appointment['appointment_date'] ?? null;
+                                            $timePart = $appointment['appointment_time'] ?? null;
+
+                                            // If datePart already contains time (ISO format), use it directly
+                                            if ($datePart && strpos($datePart, 'T') !== false) {
+                                                $datetime = $datePart;
+                                            } else {
+                                                // Normalize time to include seconds
+                                                if ($timePart && preg_match('/^\d{2}:\d{2}$/', $timePart)) {
+                                                    $timePart .= ':00';
+                                                }
+                                                $timePart = $timePart ?: '00:00:00';
+                                                $datetime = trim(($datePart ?: '') . ' ' . $timePart);
+                                            }
+                                        }
+                                    @endphp
+                                    {{ \Carbon\Carbon::parse($datetime)->format('M d, Y • h:i A') }}
                                 </p>
                                 <div class="flex items-center gap-3">
                                     <span class="bg-{{ $appointment['status'] == 'confirmed' ? 'green' : ($appointment['status'] == 'pending' ? 'yellow' : 'red') }}-100 dark:bg-{{ $appointment['status'] == 'confirmed' ? 'green' : ($appointment['status'] == 'pending' ? 'yellow' : 'red') }}-900/20 text-{{ $appointment['status'] == 'confirmed' ? 'green' : ($appointment['status'] == 'pending' ? 'yellow' : 'red') }}-800 dark:text-{{ $appointment['status'] == 'confirmed' ? 'green' : ($appointment['status'] == 'pending' ? 'yellow' : 'red') }}-300 text-xs px-2 py-1 rounded-full">
@@ -215,14 +237,25 @@
                         <select wire:model="selectedDoctorId" class="w-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-lg px-4 py-3 text-text-light-primary dark:text-text-dark-primary focus:outline-none focus:ring-2 focus:ring-primary">
                             <option value="">Choose a doctor...</option>
                             @foreach($doctors as $doctor)
-                                <option value="{{ $doctor->id }}">
-                                    Dr. {{ $doctor->name }} - {{ $doctor->doctorDetail->specialization ?? 'General Practitioner' }}
-                                </option>
+                                    @php
+                                        $docFee = $doctor->doctorDetail->consultation_fee ?? $doctor->consultation_fee ?? 0;
+                                    @endphp
+                                    <option value="{{ $doctor->id }}">
+                                        Dr. {{ $doctor->name }} - {{ $doctor->doctorDetail->specialization ?? 'General Practitioner' }} @if($docFee > 0) - LKR {{ number_format($docFee, 2) }} @endif
+                                    </option>
                             @endforeach
                         </select>
                         @error('selectedDoctorId') 
                             <p class="text-red-600 dark:text-red-400 text-sm mt-1">{{ $message }}</p>
                         @enderror
+                            <!-- Show booking fee for selected doctor -->
+                            <input type="hidden" wire:model="fee">
+                            @if($fee > 0)
+                            <div class="mt-3">
+                                <label class="block text-text-light-primary dark:text-text-dark-primary text-sm font-medium mb-1">Booking Fee</label>
+                                <div class="text-text-light-primary dark:text-text-dark-primary font-semibold">LKR {{ number_format($fee, 2) }}</div>
+                            </div>
+                            @endif
                     </div>
                     @else
                     <div class="mb-6 p-4 rounded-lg bg-primary/10 dark:bg-primary/20 border border-primary/20">
@@ -230,13 +263,30 @@
                             <div class="flex items-center justify-center rounded-full size-12 bg-primary/20 text-primary">
                                 <span class="material-symbols-outlined">stethoscope</span>
                             </div>
-                            <div>
+                            <div class="flex-1">
                                 <p class="text-text-light-primary dark:text-text-dark-primary font-semibold">
                                     Dr. {{ $selectedDoctor->name }}
                                 </p>
-                                <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
+                                <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm mb-2">
                                     {{ $selectedDoctor->doctorDetail->specialization ?? 'General Practitioner' }}
                                 </p>
+
+                                @if($fee > 0)
+                                <div class="mt-2 p-3 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-text-light-secondary dark:text-text-dark-secondary text-sm">Doctor Fee</span>
+                                        <span class="font-semibold">LKR {{ number_format($fee, 2) }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between mt-1">
+                                        <span class="text-text-light-secondary dark:text-text-dark-secondary text-sm">Platform Commission ({{ intval(($commissionPercent ?? 0.10) * 100) }}%)</span>
+                                        <span class="text-sm">LKR {{ number_format(round($fee * ($commissionPercent ?? 0.10), 2), 2) }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between mt-2">
+                                        <span class="text-text-light-primary dark:text-text-dark-primary font-medium">You will be charged</span>
+                                        <span class="font-bold">LKR {{ number_format($fee, 2) }}</span>
+                                    </div>
+                                </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -281,6 +331,36 @@
                         @enderror
                     </div>
 
+                    <!-- Fee Breakdown -->
+                    @if($fee > 0)
+                    <div class="mb-6 p-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark">
+                        <p class="text-text-light-primary dark:text-text-dark-primary text-sm font-medium mb-2">Fee</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-text-light-secondary dark:text-text-dark-secondary text-sm">Doctor Fee</span>
+                            <span class="font-semibold">LKR {{ number_format($fee, 2) }}</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-1">
+                            <span class="text-text-light-secondary dark:text-text-dark-secondary text-sm">Platform Commission ({{ intval(($commissionPercent ?? 0.10) * 100) }}%)</span>
+                            <span class="text-sm">LKR {{ number_format(round($fee * ($commissionPercent ?? 0.10), 2), 2) }}</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-text-light-primary dark:text-text-dark-primary font-medium">You will be charged</span>
+                            <span class="font-bold">LKR {{ number_format($fee, 2) }}</span>
+                        </div>
+
+                        <div class="mt-3">
+                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm">Your Wallet Balance</p>
+                            <div class="font-semibold">LKR {{ number_format($patientWalletBalance, 2) }}</div>
+                            @if($patientWalletBalance < $fee)
+                                <div class="mt-2 text-red-600 dark:text-red-400 text-sm flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">warning</span>
+                                    Insufficient wallet balance to pay the fee. Please top up your wallet.
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- Reason -->
                     <div class="mb-6">
                         <label class="block text-text-light-primary dark:text-text-dark-primary text-sm font-medium mb-3">
@@ -303,9 +383,13 @@
                             Cancel
                         </button>
 
-                        <button type="submit" class="flex items-center justify-center rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold gap-2">
+                        @php $insufficient = ($fee > 0 && $patientWalletBalance < $fee); @endphp
+                        <button type="submit"
+                                @if($insufficient) disabled @endif
+                                wire:loading.attr="disabled"
+                                class="flex items-center justify-center rounded-lg h-11 px-6 text-sm font-bold gap-2 {{ $insufficient ? 'bg-gray-300 text-gray-700 cursor-not-allowed' : 'bg-primary text-white' }}">
                             <span class="material-symbols-outlined text-sm">bookmark</span>
-                            Book Appointment
+                            {{ $insufficient ? 'Insufficient Balance' : 'Book Appointment' }}
                         </button>
                     </div>
                 </form>

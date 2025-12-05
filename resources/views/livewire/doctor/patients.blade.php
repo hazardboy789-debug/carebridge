@@ -117,13 +117,13 @@
                 </div>
 
                 <!-- Patient Details Modal -->
-                @if($selectedPatient)
+                @if($viewingPatient)
                 <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-text-light-primary dark:text-text-dark-primary text-lg font-bold">
-                            Patient History - {{ $selectedPatient->name }}
+                            Patient History - {{ $viewingPatient->name }}
                         </h2>
-                        <button wire:click="closePatient" class="flex items-center justify-center rounded-full size-8 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500">
+                        <button wire:click="closeViewModal" class="flex items-center justify-center rounded-full size-8 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500">
                             <span class="material-symbols-outlined text-lg">close</span>
                         </button>
                     </div>
@@ -133,7 +133,7 @@
                         <div class="bg-background-light dark:bg-background-dark p-4 rounded-lg">
                             <h3 class="text-text-light-primary dark:text-text-dark-primary font-semibold mb-3">Consultation History</h3>
                             <div class="space-y-3">
-                                @forelse($patientConsultations as $consultation)
+                                @forelse($patientAppointments as $consultation)
                                 <div class="border-l-4 border-primary pl-3 py-1">
                                     <p class="text-text-light-primary dark:text-text-dark-primary text-sm font-medium">
                                         {{ $consultation->created_at->format('M d, Y') }}
@@ -155,7 +155,7 @@
                         <div class="bg-background-light dark:bg-background-dark p-4 rounded-lg">
                             <h3 class="text-text-light-primary dark:text-text-dark-primary font-semibold mb-3">Medical Notes</h3>
                             <div class="space-y-3">
-                                @forelse($patientNotes as $note)
+                                @forelse($patientNotes ?? [] as $note)
                                 <div class="border-l-4 border-green-500 pl-3 py-1">
                                     <p class="text-text-light-primary dark:text-text-dark-primary text-sm font-medium">
                                         {{ $note->created_at->format('M d, Y') }}

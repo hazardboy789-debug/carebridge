@@ -12,18 +12,29 @@ class Appointment extends Model
     protected $fillable = [
         'patient_id',
         'doctor_id',
-        'appointment_date',
+        'scheduled_at', // This is the actual column name
         'appointment_time',
+        'appointment_date',
         'status',
         'symptoms',
+        'diagnosis',
+        'prescription',
         'notes',
-        'fee'
+        'fee',
+        'payment_status'
     ];
 
     protected $casts = [
+        'scheduled_at' => 'datetime', // This stores both date and time
         'appointment_date' => 'date',
         'fee' => 'decimal:2',
     ];
+
+    // Payment status constants
+    const PAYMENT_PENDING = 'pending';
+    const PAYMENT_PAID = 'paid';
+    const PAYMENT_FAILED = 'failed';
+    const PAYMENT_REFUNDED = 'refunded';
 
     // Relationship with patient
     public function patient()
@@ -35,5 +46,17 @@ class Appointment extends Model
     public function doctor()
     {
         return $this->belongsTo(User::class, 'doctor_id');
+    }
+
+    // Relationship with doctor details through user
+    public function doctorDetail()
+    {
+        return $this->hasOneThrough(DoctorDetail::class, User::class, 'id', 'user_id', 'doctor_id', 'id');
+    }
+
+    // Accessor for appointment time (extract time from scheduled_at)
+    public function getAppointmentTimeAttribute()
+    {
+        return $this->scheduled_at ? $this->scheduled_at->format('H:i') : null;
     }
 }

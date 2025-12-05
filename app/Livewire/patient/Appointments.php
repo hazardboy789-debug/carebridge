@@ -7,26 +7,39 @@ use Livewire\Attributes\Layout;
 use App\Models\Appointment;
 use App\Models\User;
 use App\Models\DoctorDetail;
+use App\Models\Wallet;
+use App\Models\WalletTransaction;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 #[Layout('components.layouts.patient')]
 class Appointments extends Component
 {
+    protected $listeners = [
+        'appointmentBooked' => 'loadAppointments'
+    ];
     public $showBookingModal = false;
     public $selectedDoctorId;
     public $selectedDoctor;
     public $bookingDate;
     public $bookingTime = '09:00';
     public $bookingReason;
+    public $fee = 0;
+    public $commissionPercent = null; // loaded from config
     
     public $upcomingAppointments = [];
     public $pastAppointments = [];
     public $doctors = [];
 
+    public $patientWalletBalance = 0;
+
     public function mount()
     {
         $this->loadAppointments();
         $this->loadDoctors();
+        $this->loadPatientWalletBalance();
+        // Ensure commission percent is available on mount (fallback to config)
+        $this->commissionPercent = floatval(config('payments.platform_commission', 0.10));
     }
 
     public function loadAppointments()
@@ -62,6 +75,17 @@ class Appointments extends Component
             ->get();
     }
 
+    public function loadPatientWalletBalance()
+    {
+        $user = auth()->user();
+        if ($user) {
+            $wallet = $user->getOrCreateWallet();
+            $this->patientWalletBalance = floatval($wallet->balance ?? 0);
+        } else {
+            $this->patientWalletBalance = 0;
+        }
+    }
+
     public function openBooking()
     {
         $this->showBookingModal = true;
@@ -87,8 +111,13 @@ class Appointments extends Component
     {
         if ($value) {
             $this->selectedDoctor = User::with('doctorDetail')->find($value);
+            // compute fee if available on doctor detail or user
+            $this->fee = floatval($this->selectedDoctor->doctorDetail->consultation_fee ?? $this->selectedDoctor->consultation_fee ?? 0);
+            // load commission from config if not already set
+            $this->commissionPercent = $this->commissionPercent ?? floatval(config('payments.platform_commission', 0.10));
         } else {
             $this->selectedDoctor = null;
+            $this->fee = 0;
         }
     }
 
@@ -98,9 +127,10 @@ class Appointments extends Component
             return true;
         }
 
-        // Check if the doctor has an appointment on this date
+        // Check if the doctor has an appointment on this date and time
         $existingAppointment = Appointment::where('doctor_id', $this->selectedDoctorId)
             ->where('appointment_date', $this->bookingDate)
+            ->where('appointment_time', $this->bookingTime)
             ->whereIn('status', ['pending', 'confirmed'])
             ->exists();
 
@@ -116,24 +146,131 @@ class Appointments extends Component
             'bookingReason' => 'required|string|min:10|max:500',
         ]);
 
+        // Determine doctor's fee (try doctorDetail->fee or fallback to 0)
+        $doctor = User::with('doctorDetail')->find($this->selectedDoctorId);
+        $fee = 0;
+        if ($doctor) {
+            // prefer the new consultation_fee on doctorDetail (null-safe), fallback to user-level consultation_fee
+            $fee = $doctor->doctorDetail?->consultation_fee ?? $doctor->consultation_fee ?? 0;
+        }
+
+        DB::beginTransaction();
         try {
-            // Create appointment - only use columns that exist
-            Appointment::create([
+            // create appointment first
+            // normalize time to H:i:s to match DB column
+            try {
+                $timeFormatted = Carbon::createFromFormat('H:i', $this->bookingTime)->format('H:i:s');
+            } catch (\Exception $e) {
+                // fallback: use raw value
+                $timeFormatted = $this->bookingTime;
+            }
+
+            // Ensure appointment_time is always provided (DB column is non-nullable)
+            $appointmentTimeForDb = $timeFormatted ?? '00:00:00';
+            $scheduledAtForDb = null;
+            try {
+                $scheduledAtForDb = Carbon::parse($this->bookingDate . ' ' . $appointmentTimeForDb)->toDateTimeString();
+            } catch (\Exception $e) {
+                $scheduledAtForDb = $this->bookingDate . ' ' . $appointmentTimeForDb;
+            }
+
+            $appointment = Appointment::create([
                 'patient_id' => auth()->id(),
                 'doctor_id' => $this->selectedDoctorId,
+                'scheduled_at' => $scheduledAtForDb,
                 'appointment_date' => $this->bookingDate,
+                'appointment_time' => $appointmentTimeForDb,
                 'status' => 'pending',
                 'symptoms' => $this->bookingReason,
-                'fee' => 0,
-                'payment_status' => 'pending',
+                'fee' => $fee,
+                'payment_status' => $fee > 0 ? 'pending' : 'paid',
             ]);
 
+            // If there's a fee, move funds from patient wallet to doctor wallet and platform commission
+            if ($fee > 0) {
+                $patient = auth()->user();
+                $patientWallet = $patient->getOrCreateWallet();
+
+                // Ensure sufficient balance
+                if ($patientWallet->balance < $fee) {
+                    throw new \Exception('Insufficient wallet balance to pay the doctor fee.');
+                }
+
+                // compute commission and net amounts (ensure commissionPercent fallback)
+                $commissionPercent = $this->commissionPercent ?? floatval(config('payments.platform_commission', 0.10));
+                $commission = round($fee * $commissionPercent, 2);
+                $netToDoctor = round($fee - $commission, 2);
+
+                // Debit patient (full fee)
+                $patientWallet->balance = $patientWallet->balance - $fee;
+                $patientWallet->save();
+
+                WalletTransaction::create([
+                    'wallet_id' => $patientWallet->id,
+                    'type' => 'debit',
+                    'amount' => $fee,
+                    'description' => 'Appointment booking - Dr. ' . ($doctor->name ?? ''),
+                    'status' => 'completed',
+                    'appointment_id' => $appointment->id,
+                ]);
+
+                // Credit doctor with net amount
+                $doctorWallet = $doctor->getOrCreateWallet();
+                $doctorWallet->balance = $doctorWallet->balance + $netToDoctor;
+                $doctorWallet->save();
+
+                WalletTransaction::create([
+                    'wallet_id' => $doctorWallet->id,
+                    'type' => 'credit',
+                    'amount' => $netToDoctor,
+                    'description' => 'Appointment payout (net) - Patient #' . auth()->id(),
+                    'status' => 'completed',
+                    'appointment_id' => $appointment->id,
+                ]);
+
+                // Credit platform commission to the first admin user's wallet if present
+                $platformOwner = User::where('role', 'admin')->first();
+                if ($platformOwner) {
+                    $platformWallet = $platformOwner->getOrCreateWallet();
+                    $platformWallet->balance = $platformWallet->balance + $commission;
+                    $platformWallet->save();
+
+                    WalletTransaction::create([
+                        'wallet_id' => $platformWallet->id,
+                        'type' => 'credit',
+                        'amount' => $commission,
+                        'description' => 'Platform commission - Appointment #' . $appointment->id,
+                        'status' => 'completed',
+                        'appointment_id' => $appointment->id,
+                    ]);
+                }
+                // Mark appointment payment as completed
+                try {
+                    $appointment->update(['payment_status' => 'paid']);
+                } catch (\Exception $e) {
+                    // swallow - not critical, will be caught by outer transaction if it fails
+                }
+            }
+
+            DB::commit();
+
             session()->flash('booking_success', 'Appointment booked successfully! Waiting for doctor confirmation.');
-            
             $this->closeBooking();
             $this->loadAppointments();
-            
+            // Refresh patient wallet balance in component (so UI updates immediately)
+            if (method_exists($this, 'loadPatientWalletBalance')) {
+                $this->loadPatientWalletBalance();
+            }
+            // Dispatch a browser event so frontend listeners can react as well
+            if (method_exists($this, 'dispatchBrowserEvent')) {
+                $this->dispatchBrowserEvent('appointmentBooked', ['appointmentId' => $appointment->id ?? null]);
+            }
         } catch (\Exception $e) {
+            DB::rollBack();
+            // If appointment was created but we rolled back, ensure it's removed
+            if (isset($appointment) && $appointment instanceof Appointment) {
+                try { $appointment->delete(); } catch (\Exception $ex) {}
+            }
             session()->flash('error', 'Failed to book appointment: ' . $e->getMessage());
         }
     }
