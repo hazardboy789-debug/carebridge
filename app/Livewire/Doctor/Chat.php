@@ -8,7 +8,9 @@ use Livewire\Attributes\Layout;
 use App\Models\User;
 use App\Models\ChatMessage;
 use App\Models\Appointment;
+use App\Models\Prescription;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 #[Layout('components.layouts.doctor')]
 class Chat extends Component
@@ -20,6 +22,10 @@ class Chat extends Component
     public $messages = [];
     public $newMessage = '';
     public $fileUpload;
+    
+    // Prescription related properties
+    public $showPrescriptionDetails = false;
+    public $selectedPrescription;
 
     public function mount()
     {
@@ -51,19 +57,34 @@ class Chat extends Component
 
             \Log::info('Found users: ' . $users->count());
 
+            // Build array of stdClass objects so Livewire can serialize safely
             $this->patients = $users->map(function($user) {
-                $lastMessage = $this->getLastMessage($user->id);
+                $lastMessageModel = $this->getLastMessage($user->id);
                 $unreadCount = $this->getUnreadCount($user->id);
 
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'last_message' => $lastMessage,
-                    'unread_count' => $unreadCount,
-                    'last_activity' => $lastMessage ? $lastMessage->created_at : now()->subYears(10),
-                ];
-            })->sortByDesc('last_activity')->values()->toArray();
+                $lastMessage = null;
+                if ($lastMessageModel) {
+                    $lastMessage = new \stdClass();
+                    $lastMessage->id = $lastMessageModel->id;
+                    $lastMessage->sender_id = $lastMessageModel->sender_id;
+                    $lastMessage->receiver_id = $lastMessageModel->receiver_id;
+                    $lastMessage->message = $lastMessageModel->message;
+                    $lastMessage->message_type = $lastMessageModel->message_type;
+                    $lastMessage->file_path = $lastMessageModel->file_path;
+                    $lastMessage->created_at = $lastMessageModel->created_at;
+                    $lastMessage->read_at = $lastMessageModel->read_at;
+                }
+
+                $patient = new \stdClass();
+                $patient->id = $user->id;
+                $patient->name = $user->name;
+                $patient->email = $user->email;
+                $patient->last_message = $lastMessage;
+                $patient->unread_count = $unreadCount;
+                $patient->last_activity = $lastMessage ? $lastMessage->created_at : now()->subYears(10);
+
+                return $patient;
+            })->sortByDesc(function($p) { return $p->last_activity; })->values()->all();
 
             \Log::info('Processed patients:', ['count' => count($this->patients)]);
 
@@ -79,6 +100,7 @@ class Chat extends Component
         $this->loadRecentChats();
         if ($this->selectedPatient) {
             $this->loadMessages();
+            $this->dispatch('messageSent'); // Trigger auto-scroll
         }
     }
 
@@ -106,7 +128,7 @@ class Chat extends Component
         }
 
         try {
-            $this->messages = ChatMessage::where(function ($query) {
+            $messages = ChatMessage::where(function ($query) {
                     $query->where('sender_id', auth()->id())
                           ->where('receiver_id', $this->selectedPatient->id);
                 })
@@ -117,7 +139,23 @@ class Chat extends Component
                 ->orderBy('created_at', 'asc')
                 ->get();
 
-            \Log::info('Loaded messages: ' . $this->messages->count());
+            // Convert message models to stdClass objects preserving Carbon dates
+            $this->messages = $messages->map(function($m) {
+                $o = new \stdClass();
+                $o->id = $m->id;
+                $o->sender_id = $m->sender_id;
+                $o->receiver_id = $m->receiver_id;
+                $o->message = $m->message;
+                $o->message_type = $m->message_type;
+                $o->file_path = $m->file_path;
+                $o->file_size = $m->file_size ?? null;
+                $o->metadata = $m->metadata;
+                $o->created_at = $m->created_at;
+                $o->read_at = $m->read_at;
+                return $o;
+            })->all();
+
+            \Log::info('Loaded messages: ' . count($this->messages));
 
         } catch (\Exception $e) {
             Log::error('Error loading messages for doctor: ' . $e->getMessage());
@@ -156,6 +194,9 @@ class Chat extends Component
                 $messageData['file_path'] = $filePath;
                 $messageData['message_type'] = $this->getFileType($this->fileUpload);
                 $messageData['message'] = 'Sent a file';
+                
+                // Store file size for display
+                $messageData['file_size'] = $this->fileUpload->getSize();
             } else {
                 // Validate text message
                 $this->validate([
@@ -164,6 +205,7 @@ class Chat extends Component
 
                 $messageData['message'] = trim($this->newMessage);
                 $messageData['message_type'] = 'text';
+                $messageData['file_size'] = null;
             }
 
             // Create the chat message
@@ -195,6 +237,8 @@ class Chat extends Component
         
         if (str_starts_with($mimeType, 'image/')) {
             return 'image';
+        } elseif ($mimeType === 'application/pdf') {
+            return 'prescription';
         } else {
             return 'file';
         }
@@ -239,6 +283,130 @@ class Chat extends Component
         $this->validate([
             'fileUpload' => 'nullable|file|max:10240',
         ]);
+    }
+
+    // Prescription Methods
+    public function sendPrescriptionAsMessage($prescriptionId)
+    {
+        try {
+            $prescription = Prescription::findOrFail($prescriptionId);
+            
+            // Check if doctor has permission to send this prescription
+            if ($prescription->doctor_id !== auth()->id()) {
+                session()->flash('error', 'You do not have permission to send this prescription.');
+                return;
+            }
+
+            if (!$prescription->pdf_path) {
+                session()->flash('error', 'Prescription PDF not found.');
+                return;
+            }
+
+            // Send prescription as a prescription message
+            $messageData = [
+                'sender_id' => auth()->id(),
+                'receiver_id' => $this->selectedPatient->id,
+                'message' => "📋 Prescription for " . $this->selectedPatient->name,
+                'message_type' => 'prescription',
+                'file_path' => $prescription->pdf_path,
+                'file_size' => Storage::disk('public')->exists($prescription->pdf_path) 
+                    ? Storage::disk('public')->size($prescription->pdf_path) 
+                    : 0,
+                'metadata' => json_encode([
+                    'type' => 'prescription',
+                    'prescription_id' => $prescription->id,
+                    'diagnosis' => $prescription->diagnosis,
+                    'follow_up_date' => $prescription->follow_up_date,
+                ])
+            ];
+
+            ChatMessage::create($messageData);
+            
+            // Update prescription status
+            $prescription->update(['status' => 'sent']);
+            
+            // Refresh messages
+            $this->loadMessages();
+            $this->loadRecentChats();
+            
+            // Dispatch event for auto-scroll
+            $this->dispatch('messageSent');
+            
+            session()->flash('success', 'Prescription sent successfully!');
+
+        } catch (\Exception $e) {
+            Log::error('Error sending prescription: ' . $e->getMessage());
+            session()->flash('error', 'Failed to send prescription. Please try again.');
+        }
+    }
+
+    public function downloadPrescription($messageId)
+    {
+        try {
+            $message = ChatMessage::findOrFail($messageId);
+            
+            // Check if user has permission to download
+            if (!in_array(auth()->id(), [$message->sender_id, $message->receiver_id])) {
+                abort(403, 'Unauthorized access');
+            }
+            
+            if ($message->message_type === 'prescription' && $message->file_path) {
+                $path = storage_path('app/public/' . $message->file_path);
+                
+                if (file_exists($path)) {
+                    // Mark as read if downloading
+                    if ($message->receiver_id === auth()->id() && !$message->read_at) {
+                        $message->update(['read_at' => now()]);
+                        $this->loadRecentChats();
+                    }
+                    
+                    $filename = 'prescription_' . $message->id . '_' . date('Y-m-d') . '.pdf';
+                    return response()->download($path, $filename);
+                }
+            }
+            
+            session()->flash('error', 'Prescription file not found.');
+            
+        } catch (\Exception $e) {
+            Log::error('Error downloading prescription: ' . $e->getMessage());
+            session()->flash('error', 'Failed to download prescription.');
+        }
+    }
+
+    public function viewPrescription($prescriptionId)
+    {
+        try {
+            $this->selectedPrescription = Prescription::with(['patient', 'doctor'])
+                ->findOrFail($prescriptionId);
+            
+            // Check if the doctor can view this prescription
+            if ($this->selectedPrescription->doctor_id !== auth()->id()) {
+                session()->flash('error', 'You do not have permission to view this prescription.');
+                return;
+            }
+            
+            $this->showPrescriptionDetails = true;
+            
+            // Dispatch event to close any other modals
+            $this->dispatch('close-prescription-modal');
+            
+        } catch (\Exception $e) {
+            Log::error('Error viewing prescription: ' . $e->getMessage());
+            session()->flash('error', 'Prescription not found.');
+        }
+    }
+
+    public function closePrescriptionDetails()
+    {
+        $this->showPrescriptionDetails = false;
+        $this->selectedPrescription = null;
+    }
+
+    // Method to handle prescription creation from modal
+    public function onPrescriptionCreated($prescriptionId)
+    {
+        // Send the prescription as a message
+        $this->sendPrescriptionAsMessage($prescriptionId);
     }
 
     public function render()

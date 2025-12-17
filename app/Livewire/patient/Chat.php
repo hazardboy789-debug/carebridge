@@ -51,26 +51,41 @@ class Chat extends Component
             // Combine both and get unique doctor IDs
             $allDoctorIds = $recentChatDoctorIds->merge($appointmentDoctorIds)->unique();
 
-            if (empty($allDoctorIds)) {
+            if ($allDoctorIds->isEmpty()) {
                 $this->doctors = [];
                 return;
             }
 
             $users = User::whereIn('id', $allDoctorIds)->get();
 
+            // Build an array of plain objects (stdClass) so Livewire can serialize safely
             $this->doctors = $users->map(function($user) {
-                $lastMessage = $this->getLastMessage($user->id);
+                $lastMessageModel = $this->getLastMessage($user->id);
                 $unreadCount = $this->getUnreadCount($user->id);
 
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'last_message' => $lastMessage,
-                    'unread_count' => $unreadCount,
-                    'last_activity' => $lastMessage ? $lastMessage->created_at : now()->subYears(10),
-                ];
-            })->sortByDesc('last_activity')->values()->toArray();
+                $lastMessage = null;
+                if ($lastMessageModel) {
+                    $lastMessage = new \stdClass();
+                    $lastMessage->id = $lastMessageModel->id;
+                    $lastMessage->sender_id = $lastMessageModel->sender_id;
+                    $lastMessage->receiver_id = $lastMessageModel->receiver_id;
+                    $lastMessage->message = $lastMessageModel->message;
+                    $lastMessage->message_type = $lastMessageModel->message_type;
+                    $lastMessage->file_path = $lastMessageModel->file_path;
+                    $lastMessage->created_at = $lastMessageModel->created_at; // Carbon instance
+                    $lastMessage->read_at = $lastMessageModel->read_at;
+                }
+
+                $doc = new \stdClass();
+                $doc->id = $user->id;
+                $doc->name = $user->name;
+                $doc->email = $user->email;
+                $doc->last_message = $lastMessage;
+                $doc->unread_count = $unreadCount;
+                $doc->last_activity = $lastMessage ? $lastMessage->created_at : now()->subYears(10);
+
+                return $doc;
+            })->sortByDesc(function($doc) { return $doc->last_activity; })->values()->all();
 
         } catch (\Exception $e) {
             Log::error('Error loading recent chats for patient: ' . $e->getMessage());
@@ -101,7 +116,7 @@ class Chat extends Component
         }
 
         try {
-            $this->messages = ChatMessage::where(function ($query) {
+            $messages = ChatMessage::where(function ($query) {
                     $query->where('sender_id', auth()->id())
                           ->where('receiver_id', $this->selectedDoctor->id);
                 })
@@ -111,6 +126,20 @@ class Chat extends Component
                 })
                 ->orderBy('created_at', 'asc')
                 ->get();
+
+            // Convert message models to simple objects preserving Carbon dates
+            $this->messages = $messages->map(function($m) {
+                $o = new \stdClass();
+                $o->id = $m->id;
+                $o->sender_id = $m->sender_id;
+                $o->receiver_id = $m->receiver_id;
+                $o->message = $m->message;
+                $o->message_type = $m->message_type;
+                $o->file_path = $m->file_path;
+                $o->created_at = $m->created_at; // Carbon
+                $o->read_at = $m->read_at;
+                return $o;
+            })->all();
 
         } catch (\Exception $e) {
             Log::error('Error loading messages for patient: ' . $e->getMessage());

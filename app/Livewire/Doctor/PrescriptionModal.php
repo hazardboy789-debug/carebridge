@@ -3,254 +3,223 @@
 namespace App\Livewire\Doctor;
 
 use Livewire\Component;
-use App\Models\Prescription;
 use App\Models\User;
+use App\Models\Prescription;
+use Livewire\WithFileUploads;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Layout;
+
+#[Layout('components.layouts.doctor')]
 
 class PrescriptionModal extends Component
 {
-    public $isOpen = false;
+    use WithFileUploads;
+
+    public $showModal = false;
+    public $patientId;
     public $patient;
     
+    // Form fields
     public $diagnosis = '';
-    public $symptoms = '';
-    public $medicines = [];
+    public $medications = [''];
     public $instructions = '';
-    public $notes = '';
     public $followUpDate = '';
-    
-    public $medicineName = '';
-    public $medicineDosage = '';
-    public $medicineFrequency = '';
-    public $medicineDuration = '';
+    public $notes = '';
+    public $signatureFile;
+    public $labTests = [''];
 
     protected $rules = [
-        'diagnosis' => 'required|string|min:3',
-        'symptoms' => 'required|string|min:3',
-        'medicines' => 'required|array|min:1',
-        'instructions' => 'nullable|string',
-        'notes' => 'nullable|string',
+        'diagnosis' => 'required|string|max:500',
+        'medications.*' => 'required|string|max:255',
+        'instructions' => 'required|string|max:1000',
         'followUpDate' => 'nullable|date|after:today',
+        'notes' => 'nullable|string|max:1000',
+        'signatureFile' => 'nullable|image|max:2048',
+        'labTests.*' => 'nullable|string|max:255',
     ];
 
-    public function openModal($patientId)
+    protected $messages = [
+        'medications.*.required' => 'Each medication field is required',
+        'medications.*.max' => 'Medication name is too long',
+    ];
+
+    protected $listeners = ['openPrescriptionModal'];
+
+    public function mount()
     {
-        $this->patient = User::find($patientId);
-        $this->isOpen = true;
-        $this->resetForm();
+        // Initialize with one empty medication and lab test
+        $this->medications = [''];
+        $this->labTests = [''];
+    }
+
+    public function openPrescriptionModal($patientId)
+    {
+        try {
+            $this->patientId = $patientId;
+            $this->patient = User::findOrFail($patientId);
+            $this->showModal = true;
+            
+            Log::info('Prescription modal opened for patient: ' . $patientId);
+        } catch (\Exception $e) {
+            Log::error('Error opening prescription modal: ' . $e->getMessage());
+            session()->flash('error', 'Patient not found.');
+        }
     }
 
     public function closeModal()
     {
-        $this->isOpen = false;
-        $this->resetForm();
+        $this->reset();
+        $this->medications = [''];
+        $this->labTests = [''];
+        $this->showModal = false;
+        $this->resetErrorBag();
     }
 
-    public function resetForm()
+    public function addMedication()
     {
-        $this->diagnosis = '';
-        $this->symptoms = '';
-        $this->medicines = [];
-        $this->instructions = '';
-        $this->notes = '';
-        $this->followUpDate = '';
-        $this->medicineName = '';
-        $this->medicineDosage = '';
-        $this->medicineFrequency = '';
-        $this->medicineDuration = '';
+        $this->medications[] = '';
     }
 
-    public function addMedicine()
+    public function removeMedication($index)
     {
-        $this->validate([
-            'medicineName' => 'required|string|min:2',
-            'medicineDosage' => 'required|string|min:2',
-            'medicineFrequency' => 'required|string|min:2',
-            'medicineDuration' => 'required|string|min:2',
-        ]);
-
-        $this->medicines[] = [
-            'name' => $this->medicineName,
-            'dosage' => $this->medicineDosage,
-            'frequency' => $this->medicineFrequency,
-            'duration' => $this->medicineDuration,
-        ];
-
-        $this->medicineName = '';
-        $this->medicineDosage = '';
-        $this->medicineFrequency = '';
-        $this->medicineDuration = '';
-
-        session()->flash('medicine_added', 'Medicine added successfully!');
+        if (count($this->medications) > 1) {
+            unset($this->medications[$index]);
+            $this->medications = array_values($this->medications);
+        }
     }
 
-    public function removeMedicine($index)
+    public function addLabTest()
     {
-        unset($this->medicines[$index]);
-        $this->medicines = array_values($this->medicines);
+        $this->labTests[] = '';
+    }
+
+    public function removeLabTest($index)
+    {
+        if (count($this->labTests) > 1) {
+            unset($this->labTests[$index]);
+            $this->labTests = array_values($this->labTests);
+        }
     }
 
     public function generatePrescription()
     {
-        $this->validate();
-
         try {
+            // Validate form
+            $validated = $this->validate();
+            
+            // Process signature file if uploaded
+            $signaturePath = null;
+            if ($this->signatureFile) {
+                $signaturePath = $this->signatureFile->store('prescriptions/signatures', 'public');
+            }
+
+            // Filter out empty medications and lab tests
+            $medications = array_filter($validated['medications']);
+            $labTests = array_filter($validated['labTests']);
+
+            // Create prescription record
             $prescription = Prescription::create([
                 'doctor_id' => auth()->id(),
-                'patient_id' => $this->patient->id,
-                'diagnosis' => $this->diagnosis,
-                'symptoms' => $this->symptoms,
-                'medicines' => $this->medicines,
-                'instructions' => $this->instructions,
-                'notes' => $this->notes,
-                'follow_up_date' => $this->followUpDate,
+                'patient_id' => $this->patientId,
+                'diagnosis' => $validated['diagnosis'],
+                'medications' => json_encode($medications),
+                'instructions' => $validated['instructions'],
+                'follow_up_date' => $validated['followUpDate'] ?: null,
+                'notes' => $validated['notes'] ?: null,
+                'lab_tests' => json_encode($labTests),
+                'signature_path' => $signaturePath,
+                'prescription_date' => now(),
+                'status' => 'active',
             ]);
 
-            $htmlContent = $this->generatePrescriptionHTML($prescription);
-            
-            $fileName = 'prescriptions/prescription_' . $prescription->id . '_' . time() . '.html';
-            Storage::disk('public')->put($fileName, $htmlContent);
-            
-            $prescription->update(['file_path' => $fileName]);
+            Log::info('Prescription created: ' . $prescription->id);
 
-            $this->dispatch('prescriptionCreated');
-            $this->dispatch('messageSent');
+            // Generate PDF
+            $this->generatePDF($prescription);
 
+            // Send as message in chat
+            $this->sendPrescriptionAsMessage($prescription);
+
+            // Close modal and reset
             $this->closeModal();
-            session()->flash('success', 'Prescription created successfully! Patient can download it from their chat.');
+
+            // Emit event to parent component
+            $this->dispatch('prescription-created', prescriptionId: $prescription->id);
+
+            // Show success message
+            session()->flash('success', 'Prescription created and sent successfully!');
 
         } catch (\Exception $e) {
+            Log::error('Error generating prescription: ' . $e->getMessage());
             session()->flash('error', 'Failed to create prescription: ' . $e->getMessage());
         }
     }
 
-    private function generatePrescriptionHTML($prescription)
+    private function generatePDF($prescription)
     {
-        $doctor = auth()->user();
-        $patient = $this->patient;
+        try {
+            $doctor = auth()->user();
+            
+            $data = [
+                'prescription' => $prescription,
+                'doctor' => $doctor,
+                'patient' => $this->patient,
+                'medications' => json_decode($prescription->medications, true),
+                'labTests' => json_decode($prescription->lab_tests, true),
+                'date' => now()->format('F d, Y'),
+                'prescriptionCode' => 'RX-' . strtoupper(Str::random(8)),
+            ];
 
-        return "
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset='utf-8'>
-            <title>Medical Prescription</title>
-            <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; }
-                .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
-                .section { margin-bottom: 20px; }
-                .section-title { background: #f8f9fa; padding: 8px; font-weight: bold; border-left: 4px solid #007bff; }
-                .medicine-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-                .medicine-table th, .medicine-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                .medicine-table th { background-color: #f8f9fa; }
-                .footer { margin-top: 50px; border-top: 1px solid #333; padding-top: 20px; }
-                .signature { float: right; text-align: center; }
-                @media print {
-                    body { margin: 0; }
-                    .no-print { display: none; }
-                }
-            </style>
-        </head>
-        <body>
-            <div class='header'>
-                <h1>MEDICAL PRESCRIPTION</h1>
-                <p><strong>CareBridge Medical Center</strong></p>
-                <p>123 Health Street, Medical City | Phone: (555) 123-4567</p>
-            </div>
-
-            <div class='section'>
-                <div style='float: left; width: 50%;'>
-                    <p><strong>Patient:</strong> {$patient->name}</p>
-                    <p><strong>Date:</strong> " . now()->format('F d, Y') . "</p>
-                </div>
-                <div style='float: right; width: 50%; text-align: right;'>
-                    <p><strong>Doctor:</strong> Dr. {$doctor->name}</p>
-                    <p><strong>License No:</strong> MED" . rand(100000, 999999) . "</p>
-                </div>
-                <div style='clear: both;'></div>
-            </div>
-
-            <div class='section'>
-                <div class='section-title'>DIAGNOSIS</div>
-                <p>{$prescription->diagnosis}</p>
-            </div>
-
-            <div class='section'>
-                <div class='section-title'>SYMPTOMS</div>
-                <p>{$prescription->symptoms}</p>
-            </div>
-
-            <div class='section'>
-                <div class='section-title'>PRESCRIBED MEDICATIONS</div>
-                <table class='medicine-table'>
-                    <thead>
-                        <tr>
-                            <th>Medicine Name</th>
-                            <th>Dosage</th>
-                            <th>Frequency</th>
-                            <th>Duration</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        " . $this->generateMedicineRows($prescription->medicines) . "
-                    </tbody>
-                </table>
-            </div>
-
-            " . ($prescription->instructions ? "
-            <div class='section'>
-                <div class='section-title'>SPECIAL INSTRUCTIONS</div>
-                <p>{$prescription->instructions}</p>
-            </div>
-            " : "") . "
-
-            " . ($prescription->notes ? "
-            <div class='section'>
-                <div class='section-title'>ADDITIONAL NOTES</div>
-                <p>{$prescription->notes}</p>
-            </div>
-            " : "") . "
-
-            " . ($prescription->follow_up_date ? "
-            <div class='section'>
-                <div class='section-title'>FOLLOW-UP</div>
-                <p>Follow-up appointment on: " . \Carbon\Carbon::parse($prescription->follow_up_date)->format('F d, Y') . "</p>
-            </div>
-            " : "") . "
-
-            <div class='footer'>
-                <div class='signature'>
-                    <p>_________________________</p>
-                    <p><strong>Dr. {$doctor->name}</strong></p>
-                    <p>Medical Practitioner</p>
-                </div>
-                <div style='clear: both;'></div>
-            </div>
-
-            <div class='no-print' style='margin-top: 30px; text-align: center;'>
-                <button onclick='window.print()' style='background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;'>
-                    Print Prescription
-                </button>
-            </div>
-        </body>
-        </html>
-        ";
+            $pdf = Pdf::loadView('pdf.prescription', $data);
+            
+            // Save PDF to storage
+            $fileName = 'prescriptions/prescription_' . $prescription->id . '_' . time() . '.pdf';
+            Storage::disk('public')->put($fileName, $pdf->output());
+            
+            // Update prescription with PDF path
+            $prescription->update(['pdf_path' => $fileName]);
+            
+            Log::info('PDF generated for prescription: ' . $prescription->id);
+            
+            return $pdf;
+        } catch (\Exception $e) {
+            Log::error('Error generating PDF: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
-    private function generateMedicineRows($medicines)
+    private function sendPrescriptionAsMessage($prescription)
     {
-        $rows = '';
-        foreach ($medicines as $medicine) {
-            $rows .= "
-            <tr>
-                <td>{$medicine['name']}</td>
-                <td>{$medicine['dosage']}</td>
-                <td>{$medicine['frequency']}</td>
-                <td>{$medicine['duration']}</td>
-            </tr>
-            ";
+        try {
+            $doctor = auth()->user();
+            
+            // Create a message record for the prescription
+            $chatMessage = new \App\Models\ChatMessage();
+            $chatMessage->sender_id = $doctor->id;
+            $chatMessage->receiver_id = $this->patientId;
+            $chatMessage->message = "📋 Prescription for " . $this->patient->name;
+            $chatMessage->message_type = 'prescription';
+            $chatMessage->file_path = $prescription->pdf_path;
+            $chatMessage->file_size = Storage::disk('public')->size($prescription->pdf_path);
+            $chatMessage->metadata = json_encode([
+                'prescription_id' => $prescription->id,
+                'diagnosis' => $prescription->diagnosis,
+                'follow_up_date' => $prescription->follow_up_date,
+            ]);
+            $chatMessage->save();
+
+            Log::info('Prescription sent as chat message: ' . $chatMessage->id);
+
+            // Update prescription status
+            $prescription->update(['status' => 'sent']);
+
+        } catch (\Exception $e) {
+            Log::error('Error sending prescription as message: ' . $e->getMessage());
+            throw $e;
         }
-        return $rows;
     }
 
     public function render()

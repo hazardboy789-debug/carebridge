@@ -13,16 +13,16 @@ return new class extends Migration
             $table->foreignId('doctor_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('patient_id')->constrained('users')->onDelete('cascade');
             $table->text('diagnosis');
-            $table->text('symptoms');
-            $table->json('medicines');
-            $table->text('instructions')->nullable();
-            $table->text('notes')->nullable();
-            $table->string('file_path')->nullable();
+            $table->json('medications'); // Store as JSON array
+            $table->text('instructions');
             $table->date('follow_up_date')->nullable();
+            $table->text('notes')->nullable();
+            $table->json('lab_tests')->nullable();
+            $table->string('signature_path')->nullable();
+            $table->string('pdf_path')->nullable();
+            $table->date('prescription_date');
+            $table->enum('status', ['active', 'expired', 'cancelled'])->default('active');
             $table->timestamps();
-
-            $table->index(['doctor_id', 'patient_id']);
-            $table->index('created_at');
         });
     }
 

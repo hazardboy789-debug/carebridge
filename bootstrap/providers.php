@@ -1,0 +1,1 @@
+Barryvdh\DomPDF\ServiceProvider::class,

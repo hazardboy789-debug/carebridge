@@ -32,6 +32,10 @@ use App\Livewire\Doctor\Chat as DoctorChat;
 use App\Livewire\Doctor\Patients as DoctorPatients;
 use App\Livewire\Doctor\DoctorWallet;
 use App\Livewire\Doctor\Profile as DoctorProfile;
+use App\Livewire\Doctor\PrescriptionModal;
+
+// Prescription Controller
+use App\Http\Controllers\PrescriptionController;
 
 // Landing
 use App\Livewire\Landing\IndexPage;
@@ -80,6 +84,28 @@ Route::post('/logout', function (Request $request) {
 
 /*
 |--------------------------------------------------------------------------
+| Prescription Routes (Public/Protected)
+|--------------------------------------------------------------------------
+*/
+
+// Download prescription by message ID (for chat)
+Route::get('/prescription/download/{message}', function ($messageId) {
+    // This route will be handled by the controller
+    return app(\App\Http\Controllers\PrescriptionController::class)->downloadByMessage($messageId);
+})->name('prescription.download')->middleware('auth');
+
+// Download prescription by prescription ID
+Route::get('/prescriptions/{prescription}/download', function ($prescriptionId) {
+    return app(\App\Http\Controllers\PrescriptionController::class)->download($prescriptionId);
+})->name('prescriptions.download')->middleware('auth');
+
+// View prescription details
+Route::get('/prescriptions/{prescription}', function ($prescriptionId) {
+    return app(\App\Http\Controllers\PrescriptionController::class)->show($prescriptionId);
+})->name('prescriptions.show')->middleware('auth');
+
+/*
+|--------------------------------------------------------------------------
 | Authenticated Routes
 |--------------------------------------------------------------------------
 */
@@ -106,6 +132,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         // Wallet Management Routes
         Route::get('/wallet-management', WalletManager::class)->name('wallet.management');
         Route::get('/wallet-transactions', WalletTransactions::class)->name('wallet.transactions');
+        
+        // Admin Prescription Routes
+        Route::get('/prescriptions', function () {
+            // Admin view of all prescriptions
+            return view('admin.prescriptions.index');
+        })->name('prescriptions.index');
     });
 
     /*
@@ -120,6 +152,17 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/chat', Chat::class)->name('chat');
         Route::get('/wallet', PatientWallet::class)->name('wallet');
         Route::get('/pharmacy', PatientPharmacy::class)->name('pharmacy');
+        
+        // Patient Prescription Routes
+        Route::get('/prescriptions', function () {
+            // Patient view of their prescriptions
+            return view('patient.prescriptions.index');
+        })->name('prescriptions');
+        
+        Route::get('/prescriptions/{prescription}', function ($prescriptionId) {
+            // Patient view of specific prescription
+            return view('patient.prescriptions.view', ['prescriptionId' => $prescriptionId]);
+        })->name('prescriptions.view');
     });
 
     /*
@@ -134,5 +177,24 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/patients', DoctorPatients::class)->name('patients');
         Route::get('/wallet', DoctorWallet::class)->name('wallet');
         Route::get('/profile', DoctorProfile::class)->name('profile');
+        
+        // Doctor Prescription Routes
+        Route::get('/prescriptions', function () {
+            // Doctor view of their prescriptions
+            return view('doctor.prescriptions.index');
+        })->name('prescriptions');
+        
+        // Prescription Modal Component
+        Route::get('/prescription/modal', PrescriptionModal::class)->name('prescription.modal');
+        
+        // Generate PDF route
+        Route::post('/prescription/generate', function (Request $request) {
+            return app(\App\Http\Controllers\PrescriptionController::class)->generate($request);
+        })->name('prescription.generate');
+        
+        // Send prescription to patient
+        Route::post('/prescription/{prescription}/send', function ($prescriptionId) {
+            return app(\App\Http\Controllers\PrescriptionController::class)->sendToPatient($prescriptionId);
+        })->name('prescription.send');
     });
 });

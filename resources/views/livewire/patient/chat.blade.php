@@ -17,39 +17,39 @@
                 <div class="overflow-y-auto h-[500px]">
                     @if(count($doctors) > 0)
                         @foreach($doctors as $doctor)
-                            <div wire:click="selectDoctor({{ $doctor['id'] }})" 
-                                 class="p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors {{ $selectedDoctor && $selectedDoctor->id === $doctor['id'] ? 'bg-blue-50 dark:bg-blue-900/20' : '' }}">
+                            <div wire:click="selectDoctor({{ $doctor->id }})" 
+                                 class="p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors {{ $selectedDoctor && $selectedDoctor->id === $doctor->id ? 'bg-blue-50 dark:bg-blue-900/20' : '' }}">
                                 <div class="flex items-center space-x-3">
                                     <div class="flex-shrink-0">
                                         <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
                                             <span class="text-blue-600 dark:text-blue-400 font-semibold text-sm">
-                                                {{ substr($doctor['name'], 0, 2) }}
+                                                {{ substr($doctor->name, 0, 2) }}
                                             </span>
                                         </div>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="font-medium text-gray-900 dark:text-white truncate">
-                                            Dr. {{ $doctor['name'] }}
+                                            <p class="font-medium text-gray-900 dark:text-white truncate">
+                                            Dr. {{ $doctor->name }}
                                         </p>
-                                        @if($doctor['last_message'])
+                                        @if($doctor->last_message)
                                             <p class="text-sm text-gray-600 dark:text-gray-400 truncate">
-                                                @if($doctor['last_message']->sender_id === auth()->id())
-                                                    You: {{ Str::limit($doctor['last_message']->message, 25) }}
+                                                @if($doctor->last_message->sender_id === auth()->id())
+                                                    You: {{ Str::limit($doctor->last_message->message, 25) }}
                                                 @else
-                                                    {{ Str::limit($doctor['last_message']->message, 25) }}
+                                                    {{ Str::limit($doctor->last_message->message, 25) }}
                                                 @endif
                                             </p>
                                             <p class="text-xs text-gray-500 dark:text-gray-500">
-                                                {{ $doctor['last_message']->created_at->diffForHumans() }}
+                                                {{ $doctor->last_message->created_at->diffForHumans() }}
                                             </p>
                                         @else
                                             <p class="text-sm text-gray-500 dark:text-gray-500">No messages yet</p>
                                             <p class="text-xs text-gray-500 dark:text-gray-500">Start a conversation</p>
                                         @endif
                                     </div>
-                                    @if($doctor['unread_count'] > 0)
+                                    @if($doctor->unread_count > 0)
                                         <span class="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
-                                            {{ $doctor['unread_count'] }}
+                                            {{ $doctor->unread_count }}
                                         </span>
                                     @endif
                                 </div>
