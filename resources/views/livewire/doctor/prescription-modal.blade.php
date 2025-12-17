@@ -52,29 +52,42 @@
                                 @error('diagnosis') <span class="text-sm text-red-500">{{ $message }}</span> @enderror
                             </div>
 
-                            <!-- Medications -->
+                            <!-- Symptoms -->
+                            <div class="mb-6">
+                                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                    Symptoms *
+                                </label>
+                                <textarea wire:model="symptoms" 
+                                          rows="3"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                          placeholder="Describe patient symptoms..."
+                                          required></textarea>
+                                @error('symptoms') <span class="text-sm text-red-500">{{ $message }}</span> @enderror
+                            </div>
+
+                            <!-- Medicines -->
                             <div class="mb-6">
                                 <div class="flex items-center justify-between mb-2">
                                     <label class="block text-sm font-medium text-gray-900 dark:text-white">
-                                        Medications *
+                                        Medicines *
                                     </label>
                                     <button type="button" 
-                                            wire:click="addMedication"
+                                            wire:click="addMedicine"
                                             class="text-sm text-green-600 dark:text-green-400 hover:text-green-700">
-                                        + Add Medication
+                                        + Add Medicine
                                     </button>
                                 </div>
                                 
-                                @foreach($medications as $index => $medication)
+                                @foreach($medicines as $index => $medicine)
                                     <div class="flex gap-2 mb-2">
                                         <input type="text"
-                                               wire:model="medications.{{ $index }}"
+                                               wire:model="medicines.{{ $index }}"
                                                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                               placeholder="Medication (e.g., Paracetamol 500mg, Twice daily, 7 days)"
+                                               placeholder="Medicine (e.g., Paracetamol|500mg|Twice daily|7 days)"
                                                required>
-                                        @if(count($medications) > 1)
+                                        @if(count($medicines) > 1)
                                             <button type="button"
-                                                    wire:click="removeMedication({{ $index }})"
+                                                    wire:click="removeMedicine({{ $index }})"
                                                     class="px-3 text-red-500 hover:text-red-700">
                                                 Remove
                                             </button>
@@ -82,7 +95,7 @@
                                     </div>
                                 @endforeach
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                    Format: Name, Dosage, Frequency, Duration
+                                    Format: Name|Dosage|Frequency|Duration (use | as separator)
                                 </p>
                             </div>
 
@@ -124,51 +137,21 @@
                                 </div>
                             </div>
 
-                            <!-- Lab Tests -->
-                            <div class="mb-6">
-                                <div class="flex items-center justify-between mb-2">
-                                    <label class="block text-sm font-medium text-gray-900 dark:text-white">
-                                        Recommended Lab Tests (Optional)
-                                    </label>
-                                    <button type="button" 
-                                            wire:click="addLabTest"
-                                            class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700">
-                                        + Add Test
-                                    </button>
-                                </div>
-                                
-                                @foreach($labTests as $index => $test)
-                                    <div class="flex gap-2 mb-2">
-                                        <input type="text"
-                                               wire:model="labTests.{{ $index }}"
-                                               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                               placeholder="Lab test name">
-                                        @if(count($labTests) > 1)
-                                            <button type="button"
-                                                    wire:click="removeLabTest({{ $index }})"
-                                                    class="px-3 text-red-500 hover:text-red-700">
-                                                Remove
-                                            </button>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-
-                            <!-- Signature -->
+                            <!-- File Upload -->
                             <div class="mb-6">
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Digital Signature (Optional)
+                                    Attach File (Optional)
                                 </label>
                                 <input type="file"
-                                       wire:model="signatureFile"
-                                       accept="image/*"
+                                       wire:model="fileUpload"
+                                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                    Upload your signature image (PNG, JPG - max 2MB)
+                                    Upload prescription file (PDF, Word, or Image - max 2MB)
                                 </p>
-                                @if($signatureFile)
+                                @if($fileUpload)
                                     <div class="mt-2">
-                                        <p class="text-sm text-green-600">File selected: {{ $signatureFile->getClientOriginalName() }}</p>
+                                        <p class="text-sm text-green-600">File selected: {{ $fileUpload->getClientOriginalName() }}</p>
                                     </div>
                                 @endif
                             </div>

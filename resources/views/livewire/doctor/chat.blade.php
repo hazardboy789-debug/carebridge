@@ -307,10 +307,20 @@
                                     <div>
                                         <h4 class="font-medium text-gray-900 dark:text-white mb-2">Prescription Details</h4>
                                         <p class="text-sm text-gray-600 dark:text-gray-400">
-                                            Date: {{ $selectedPrescription->prescription_date->format('M d, Y') }}<br>
-                                            Status: <span class="px-2 py-1 text-xs rounded-full {{ $selectedPrescription->status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' }}">
-                                                {{ ucfirst($selectedPrescription->status) }}
-                                            </span>
+                                            Date: @php
+                                                if (!empty($selectedPrescription->created_at)) {
+                                                    echo $selectedPrescription->created_at->format('M d, Y');
+                                                } elseif (!empty($selectedPrescription->follow_up_date)) {
+                                                    echo \Carbon\Carbon::parse($selectedPrescription->follow_up_date)->format('M d, Y');
+                                                } else {
+                                                    echo 'N/A';
+                                                }
+                                            @endphp<br>
+                                            Status: @php
+                                                $status = $selectedPrescription->status ?? 'N/A';
+                                                $isActive = isset($selectedPrescription->status) && $selectedPrescription->status === 'active';
+                                            @endphp
+                                            <span class="px-2 py-1 text-xs rounded-full {{ $isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' }}">{{ ucfirst($status) }}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -337,7 +347,16 @@
                                                 </tr>
                                             </thead>
                                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                                @foreach(json_decode($selectedPrescription->medications, true) as $medication)
+                                                @php
+                                                    $medications = [];
+                                                    if (!empty($selectedPrescription) && !empty($selectedPrescription->medications)) {
+                                                        $medications = is_array($selectedPrescription->medications)
+                                                            ? $selectedPrescription->medications
+                                                            : (json_decode($selectedPrescription->medications, true) ?: []);
+                                                    }
+                                                @endphp
+
+                                                @forelse($medications as $medication)
                                                     @php
                                                         $parts = explode('|', $medication);
                                                         $name = $parts[0] ?? $medication;
@@ -351,7 +370,11 @@
                                                         <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $frequency }}</td>
                                                         <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $duration }}</td>
                                                     </tr>
-                                                @endforeach
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="4" class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">No medications specified.</td>
+                                                    </tr>
+                                                @endforelse
                                             </tbody>
                                         </table>
                                     </div>
@@ -362,14 +385,14 @@
                                     <div>
                                         <h4 class="font-medium text-gray-900 dark:text-white mb-2">Instructions</h4>
                                         <p class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-3 rounded">
-                                            {{ $selectedPrescription->instructions }}
+                                            {{ optional($selectedPrescription)->instructions }}
                                         </p>
                                     </div>
-                                    @if($selectedPrescription->notes)
+                                    @if(optional($selectedPrescription)->notes)
                                     <div>
                                         <h4 class="font-medium text-gray-900 dark:text-white mb-2">Additional Notes</h4>
                                         <p class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-3 rounded">
-                                            {{ $selectedPrescription->notes }}
+                                            {{ optional($selectedPrescription)->notes }}
                                         </p>
                                     </div>
                                     @endif
@@ -377,22 +400,31 @@
 
                                 <!-- Lab Tests & Follow-up -->
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    @if($selectedPrescription->lab_tests && !empty(json_decode($selectedPrescription->lab_tests, true)))
+                                    @php
+                                        $labTests = [];
+                                            if (!empty($selectedPrescription) && !empty($selectedPrescription->lab_tests)) {
+                                            $labTests = is_array($selectedPrescription->lab_tests)
+                                                ? $selectedPrescription->lab_tests
+                                                : (json_decode($selectedPrescription->lab_tests, true) ?: []);
+                                        }
+                                    @endphp
+
+                                    @if(!empty($labTests))
                                     <div>
                                         <h4 class="font-medium text-gray-900 dark:text-white mb-2">Recommended Lab Tests</h4>
                                         <ul class="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-3 rounded space-y-1">
-                                            @foreach(json_decode($selectedPrescription->lab_tests, true) as $test)
+                                            @foreach($labTests as $test)
                                                 <li>{{ $test }}</li>
                                             @endforeach
                                         </ul>
                                     </div>
                                     @endif
 
-                                    @if($selectedPrescription->follow_up_date)
+                                    @if(optional($selectedPrescription)->follow_up_date)
                                     <div>
                                         <h4 class="font-medium text-gray-900 dark:text-white mb-2">Follow-up</h4>
                                         <div class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-3 rounded">
-                                            <p><strong>Date:</strong> {{ \Carbon\Carbon::parse($selectedPrescription->follow_up_date)->format('M d, Y') }}</p>
+                                            <p><strong>Date:</strong> {{ \Carbon\Carbon::parse(optional($selectedPrescription)->follow_up_date)->format('M d, Y') }}</p>
                                             <p class="mt-1">Please schedule a follow-up appointment to review progress.</p>
                                         </div>
                                     </div>
@@ -402,7 +434,7 @@
                                 <!-- Actions -->
                                 <div class="pt-6 border-t border-gray-200 dark:border-gray-700">
                                     <div class="flex justify-end space-x-3">
-                                        <a href="{{ route('prescription.download-by-id', $selectedPrescription->id) }}"
+                                        <a href="{{ route('prescriptions.download', $selectedPrescription->id) }}"
                                            target="_blank"
                                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                                             Download PDF

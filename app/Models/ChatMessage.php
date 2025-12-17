@@ -15,11 +15,14 @@ class ChatMessage extends Model
         'message',
         'message_type',
         'file_path',
+        'file_size',
+        'metadata',
         'read_at',
     ];
 
     protected $casts = [
         'read_at' => 'datetime',
+        'metadata' => 'array',
     ];
 
     public function sender()

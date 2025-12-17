@@ -13,8 +13,10 @@ return new class extends Migration
             $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
             $table->text('message');
-            $table->enum('message_type', ['text', 'image', 'file'])->default('text');
+            $table->enum('message_type', ['text', 'image', 'file', 'prescription'])->default('text');
             $table->string('file_path')->nullable(); // For file/image messages
+            $table->integer('file_size')->nullable(); // File size in bytes
+            $table->json('metadata')->nullable(); // For prescription metadata
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
 

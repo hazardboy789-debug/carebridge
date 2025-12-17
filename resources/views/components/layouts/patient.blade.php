@@ -60,7 +60,7 @@
                                 fill="currentColor" fill-rule="evenodd"></path>
                         </svg>
                     </div>
-                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold">Care-Path</h2>
+                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold">CareBridge</h2>
                 </div>
                 <div class="flex flex-col gap-4 mt-6 grow">
                     <div class="flex flex-col gap-2">

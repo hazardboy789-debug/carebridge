@@ -55,7 +55,7 @@
                             <path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"></path>
                         </svg>
                     </div>
-                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold">Care-Path Doctor</h2>
+                    <h2 class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold">CareBridge Doctor</h2>
                 </div>
                 <div class="flex flex-col gap-4 mt-6 grow">
                     <div class="flex flex-col gap-2">

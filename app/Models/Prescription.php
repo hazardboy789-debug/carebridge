@@ -11,22 +11,19 @@ class Prescription extends Model
         'doctor_id',
         'patient_id',
         'diagnosis',
-        'medications',
+        'symptoms', // This exists in your DB
+        'medicines', // This is 'medicines' not 'medications'
         'instructions',
-        'follow_up_date',
         'notes',
-        'lab_tests',
-        'signature_path',
-        'pdf_path',
-        'prescription_date',
-        'status',
+        'file_path', // This is 'file_path' not 'signature_path' or 'pdf_path'
+        'follow_up_date',
+        'created_at',
+        'updated_at',
     ];
 
     protected $casts = [
-        'medications' => 'array',
-        'lab_tests' => 'array',
+        'medicines' => 'array', // Cast medicines to array
         'follow_up_date' => 'date',
-        'prescription_date' => 'date',
     ];
 
     public function doctor(): BelongsTo
@@ -39,8 +36,36 @@ class Prescription extends Model
         return $this->belongsTo(User::class, 'patient_id');
     }
 
-    public function getPdfUrlAttribute()
+    public function getFileUrlAttribute()
     {
-        return $this->pdf_path ? asset('storage/' . $this->pdf_path) : null;
+        return $this->file_path ? asset('storage/' . $this->file_path) : null;
+    }
+    
+    // Helper method to get medicines as array
+    public function getMedicinesListAttribute()
+    {
+        return is_array($this->medicines) ? $this->medicines : json_decode($this->medicines, true) ?? [];
+    }
+    
+    // Helper method to get formatted medicines
+    public function getFormattedMedicinesAttribute()
+    {
+        $medicines = $this->medicines_list;
+        if (empty($medicines)) {
+            return [];
+        }
+        
+        $formatted = [];
+        foreach ($medicines as $medicine) {
+            $parts = explode('|', $medicine);
+            $formatted[] = [
+                'name' => $parts[0] ?? $medicine,
+                'dosage' => $parts[1] ?? 'As directed',
+                'frequency' => $parts[2] ?? 'Daily',
+                'duration' => $parts[3] ?? '7 days',
+            ];
+        }
+        
+        return $formatted;
     }
 }

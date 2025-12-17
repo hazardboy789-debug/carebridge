@@ -28,7 +28,7 @@
                                         </div>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                            <p class="font-medium text-gray-900 dark:text-white truncate">
+                                        <p class="font-medium text-gray-900 dark:text-white truncate">
                                             Dr. {{ $doctor->name }}
                                         </p>
                                         @if($doctor->last_message)
@@ -92,6 +92,21 @@
                     <!-- Messages -->
                     <div class="flex-1 overflow-y-auto p-4 space-y-4" id="messages-container">
                         @foreach($messages as $message)
+                            @php
+                                // Normalize metadata: it may already be an array (from Livewire),
+                                // or a JSON string from the database. Handle both safely.
+                                if (is_array($message->metadata)) {
+                                    $metadata = $message->metadata;
+                                } elseif ($message->metadata && is_string($message->metadata)) {
+                                    $metadata = json_decode($message->metadata, true) ?: null;
+                                } else {
+                                    $metadata = null;
+                                }
+
+                                $isPrescription = $message->message_type === 'prescription' ||
+                                                 ($metadata && isset($metadata['prescription_id']));
+                            @endphp
+                            
                             <div class="flex {{ $message->sender_id === auth()->id() ? 'justify-end' : 'justify-start' }}">
                                 <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg 
                                     {{ $message->sender_id === auth()->id() 
@@ -100,6 +115,7 @@
                                     
                                     @if($message->message_type === 'text')
                                         <p class="text-sm">{{ $message->message }}</p>
+                                    
                                     @elseif($message->message_type === 'image')
                                         <div class="space-y-2">
                                             <img src="{{ asset('storage/' . $message->file_path) }}" 
@@ -107,7 +123,51 @@
                                                  class="rounded-lg max-w-full h-auto">
                                             <p class="text-xs opacity-75">Shared an image</p>
                                         </div>
-                                    @else
+                                    
+                                    @elseif($isPrescription && $message->file_path)
+                                        <!-- Prescription Message -->
+                                        <div class="space-y-3">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                                                    <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                    </svg>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <p class="font-medium text-sm">Medical Prescription</p>
+                                                    <p class="text-sm">{{ $message->message }}</p>
+                                                    @if(isset($metadata['diagnosis']))
+                                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                                            Diagnosis: {{ Str::limit($metadata['diagnosis'], 50) }}
+                                                        </p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">
+                                                    PDF Document • {{ $message->file_size ? round($message->file_size / 1024) : 'N/A' }} KB
+                                                </span>
+                                                <div class="flex space-x-2">
+                                                    @if($message->file_path)
+                                                        <a href="{{ route('prescription.download', $message->id) }}" 
+                                                           target="_blank"
+                                                           class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                                            Download PDF
+                                                        </a>
+                                                    @endif
+                                                    @if(isset($metadata['prescription_id']))
+                                                        <button wire:click="viewPrescriptionFromMessage({{ $message->id }})"
+                                                                class="text-xs px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                                                            View Details
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    
+                                    @elseif($message->file_path)
+                                        <!-- Regular File -->
                                         <div class="space-y-2">
                                             <div class="flex items-center space-x-2">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,16 +175,18 @@
                                                 </svg>
                                                 <span class="text-sm">File attached</span>
                                             </div>
-                                            <a href="{{ asset('storage/' . $message->file_path) }}" 
-                                               download
-                                               class="text-xs text-blue-400 hover:text-blue-300 underline">
-                                                Download file
-                                            </a>
+                                            @if($message->file_path)
+                                                <a href="{{ route('prescription.download', $message->id) }}" 
+                                                   target="_blank"
+                                                   class="text-xs text-blue-400 hover:text-blue-300 underline">
+                                                    Download file
+                                                </a>
+                                            @endif
                                         </div>
                                     @endif
                                     
                                     <p class="text-xs mt-1 opacity-75 text-right">
-                                        {{ $message->created_at->format('h:i A') }}
+                                        {{ \Carbon\Carbon::parse($message->created_at)->format('h:i A') }}
                                         @if($message->sender_id === auth()->id() && $message->read_at)
                                             <span class="ml-1 text-green-400">✓ Read</span>
                                         @endif
@@ -208,6 +270,169 @@
         </div>
     </div>
 
+    <!-- Prescription Details Modal -->
+    @if($showPrescriptionDetails && $selectedPrescription)
+        <div class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <!-- Background overlay -->
+                <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" wire:click="closePrescriptionDetails"></div>
+
+                <!-- Modal Panel -->
+                <div class="inline-block w-full max-w-4xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+                    <!-- Header -->
+                    <div class="px-6 py-4 bg-green-50 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                Prescription Details
+                            </h3>
+                            <button wire:click="closePrescriptionDetails" class="text-gray-400 hover:text-gray-500">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Prescription Details -->
+                    <div class="px-6 py-4 max-h-[70vh] overflow-y-auto">
+                        <div class="space-y-6">
+                            <!-- Basic Info -->
+                            @php
+                                $presc = $selectedPrescription ?? null;
+                                $prescriberName = optional(optional($presc)->doctor)->name ?: '—';
+                                $prescribedAt = optional($presc)->created_at ? \Carbon\Carbon::parse(optional($presc)->created_at)->format('M d, Y') : '';
+                            @endphp
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Prescribed By</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                                        Dr. {{ $prescriberName }}<br>
+                                        {{ $prescribedAt }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Your Information</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                                        {{ auth()->user()->name }}<br>
+                                        {{ auth()->user()->email }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Diagnosis -->
+                            <div>
+                                <h4 class="font-medium text-gray-900 dark:text-white mb-2">Diagnosis</h4>
+                                <p class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-3 rounded">
+                                    {{ $selectedPrescription->diagnosis }}
+                                </p>
+                            </div>
+
+                            <!-- Symptoms -->
+                            @if($selectedPrescription->symptoms)
+                            <div>
+                                <h4 class="font-medium text-gray-900 dark:text-white mb-2">Symptoms</h4>
+                                <p class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-3 rounded">
+                                    {{ $selectedPrescription->symptoms }}
+                                </p>
+                            </div>
+                            @endif
+
+                            <!-- Medicines -->
+                            <div>
+                                <h4 class="font-medium text-gray-900 dark:text-white mb-3">Prescribed Medicines</h4>
+                                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg overflow-hidden">
+                                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead class="bg-gray-100 dark:bg-gray-700">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Medicine</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Dosage</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Frequency</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Duration</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                            @php
+                                                $medications = [];
+                                                if (!empty($selectedPrescription) && !empty($selectedPrescription->medicines_list)) {
+                                                    $medications = is_array($selectedPrescription->medicines_list)
+                                                        ? $selectedPrescription->medicines_list
+                                                        : (json_decode($selectedPrescription->medicines_list, true) ?: []);
+                                                }
+                                            @endphp
+
+                                            @forelse($medications as $medicine)
+                                                @php
+                                                    $parts = explode('|', $medicine);
+                                                    $name = $parts[0] ?? $medicine;
+                                                    $dosage = $parts[1] ?? 'As directed';
+                                                    $frequency = $parts[2] ?? 'Daily';
+                                                    $duration = $parts[3] ?? '7 days';
+                                                @endphp
+                                                <tr>
+                                                    <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">{{ $name }}</td>
+                                                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $dosage }}</td>
+                                                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $frequency }}</td>
+                                                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $duration }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="4" class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">No medicines specified.</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Instructions & Notes -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Instructions</h4>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-3 rounded">
+                                        {{ optional($selectedPrescription)->instructions }}
+                                    </p>
+                                </div>
+                                @if(optional($selectedPrescription)->notes)
+                                <div>
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Additional Notes</h4>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-3 rounded">
+                                        {{ optional($selectedPrescription)->notes }}
+                                    </p>
+                                </div>
+                                @endif
+                            </div>
+
+                            @if(optional($selectedPrescription)->follow_up_date)
+                            <div>
+                                <h4 class="font-medium text-gray-900 dark:text-white mb-2">Follow-up</h4>
+                                <div class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-3 rounded">
+                                    <p><strong>Date:</strong> {{ \Carbon\Carbon::parse(optional($selectedPrescription)->follow_up_date)->format('M d, Y') }}</p>
+                                    <p class="mt-1">Please schedule a follow-up appointment to review progress.</p>
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- Actions -->
+                            <div class="pt-6 border-t border-gray-200 dark:border-gray-700">
+                                <div class="flex justify-end space-x-3">
+                                    <a href="{{ route('prescriptions.download', $selectedPrescription->id) }}" 
+                                       target="_blank"
+                                       class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                        Download PDF
+                                    </a>
+                                    <button wire:click="closePrescriptionDetails"
+                                            class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     @script
     <script>
         // Auto-scroll to bottom when new messages arrive
@@ -231,6 +456,15 @@
             const container = document.getElementById('messages-container');
             if (container) {
                 container.scrollTop = container.scrollHeight;
+            }
+        });
+
+        // Show success/error messages with toast
+        Livewire.on('show-toast', (data) => {
+            if (data.type === 'success') {
+                toastr.success(data.message);
+            } else if (data.type === 'error') {
+                toastr.error(data.message);
             }
         });
     </script>

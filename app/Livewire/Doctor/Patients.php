@@ -71,6 +71,15 @@ class Patients extends Component
         $this->patientAppointments = [];
     }
 
+    public function messagePatient($patientId)
+    {
+        // Dispatch event to open chat with this patient in the Chat component
+        $this->dispatch('selectPatientForChat', patientId: $patientId);
+        
+        // Optionally redirect to chat page or emit to parent
+        session()->flash('message', 'Opening chat with patient...');
+    }
+
     public function getPatientStats()
     {
         $doctorId = auth()->id();

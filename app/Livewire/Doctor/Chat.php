@@ -17,6 +17,8 @@ class Chat extends Component
 {
     use WithFileUploads;
 
+    protected $listeners = ['prescriptionCreated' => 'onPrescriptionCreated'];
+
     public $patients = [];
     public $selectedPatient = null;
     public $messages = [];
@@ -297,7 +299,7 @@ class Chat extends Component
                 return;
             }
 
-            if (!$prescription->pdf_path) {
+            if (!$prescription->file_path) {
                 session()->flash('error', 'Prescription PDF not found.');
                 return;
             }
@@ -308,9 +310,9 @@ class Chat extends Component
                 'receiver_id' => $this->selectedPatient->id,
                 'message' => "📋 Prescription for " . $this->selectedPatient->name,
                 'message_type' => 'prescription',
-                'file_path' => $prescription->pdf_path,
-                'file_size' => Storage::disk('public')->exists($prescription->pdf_path) 
-                    ? Storage::disk('public')->size($prescription->pdf_path) 
+                'file_path' => $prescription->file_path,
+                'file_size' => Storage::disk('public')->exists($prescription->file_path) 
+                    ? Storage::disk('public')->size($prescription->file_path) 
                     : 0,
                 'metadata' => json_encode([
                     'type' => 'prescription',
@@ -337,39 +339,6 @@ class Chat extends Component
         } catch (\Exception $e) {
             Log::error('Error sending prescription: ' . $e->getMessage());
             session()->flash('error', 'Failed to send prescription. Please try again.');
-        }
-    }
-
-    public function downloadPrescription($messageId)
-    {
-        try {
-            $message = ChatMessage::findOrFail($messageId);
-            
-            // Check if user has permission to download
-            if (!in_array(auth()->id(), [$message->sender_id, $message->receiver_id])) {
-                abort(403, 'Unauthorized access');
-            }
-            
-            if ($message->message_type === 'prescription' && $message->file_path) {
-                $path = storage_path('app/public/' . $message->file_path);
-                
-                if (file_exists($path)) {
-                    // Mark as read if downloading
-                    if ($message->receiver_id === auth()->id() && !$message->read_at) {
-                        $message->update(['read_at' => now()]);
-                        $this->loadRecentChats();
-                    }
-                    
-                    $filename = 'prescription_' . $message->id . '_' . date('Y-m-d') . '.pdf';
-                    return response()->download($path, $filename);
-                }
-            }
-            
-            session()->flash('error', 'Prescription file not found.');
-            
-        } catch (\Exception $e) {
-            Log::error('Error downloading prescription: ' . $e->getMessage());
-            session()->flash('error', 'Failed to download prescription.');
         }
     }
 
@@ -405,8 +374,13 @@ class Chat extends Component
     // Method to handle prescription creation from modal
     public function onPrescriptionCreated($prescriptionId)
     {
-        // Send the prescription as a message
-        $this->sendPrescriptionAsMessage($prescriptionId);
+        // Refresh recent chats and messages when a prescription is created
+        $prescription = Prescription::find($prescriptionId);
+        $this->loadRecentChats();
+        if ($this->selectedPatient && $prescription && $prescription->patient_id === $this->selectedPatient->id) {
+            $this->loadMessages();
+            $this->dispatch('messageSent');
+        }
     }
 
     public function render()

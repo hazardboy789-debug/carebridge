@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 
 #[Layout('components.layouts.doctor')]
-
 class PrescriptionModal extends Component
 {
     use WithFileUploads;
@@ -22,37 +21,37 @@ class PrescriptionModal extends Component
     public $patientId;
     public $patient;
     
-    // Form fields
+    // Form fields - UPDATED to match your database
     public $diagnosis = '';
-    public $medications = [''];
+    public $symptoms = ''; // Added symptoms field
+    public $medicines = ['']; // Changed from medications to medicines
     public $instructions = '';
     public $followUpDate = '';
     public $notes = '';
-    public $signatureFile;
-    public $labTests = [''];
+    public $fileUpload; // Changed from signatureFile to fileUpload
 
     protected $rules = [
         'diagnosis' => 'required|string|max:500',
-        'medications.*' => 'required|string|max:255',
+        'symptoms' => 'required|string|max:500', // Added symptoms validation
+        'medicines.*' => 'required|string|max:500', // Changed from medications
         'instructions' => 'required|string|max:1000',
         'followUpDate' => 'nullable|date|after:today',
         'notes' => 'nullable|string|max:1000',
-        'signatureFile' => 'nullable|image|max:2048',
-        'labTests.*' => 'nullable|string|max:255',
+        'fileUpload' => 'nullable|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048', // Changed from signatureFile
     ];
 
     protected $messages = [
-        'medications.*.required' => 'Each medication field is required',
-        'medications.*.max' => 'Medication name is too long',
+        'medicines.*.required' => 'Each medicine field is required',
+        'medicines.*.max' => 'Medicine name is too long',
+        'symptoms.required' => 'Please describe the symptoms',
     ];
 
     protected $listeners = ['openPrescriptionModal'];
 
     public function mount()
     {
-        // Initialize with one empty medication and lab test
-        $this->medications = [''];
-        $this->labTests = [''];
+        // Initialize with one empty medicine
+        $this->medicines = [''];
     }
 
     public function openPrescriptionModal($patientId)
@@ -72,35 +71,21 @@ class PrescriptionModal extends Component
     public function closeModal()
     {
         $this->reset();
-        $this->medications = [''];
-        $this->labTests = [''];
+        $this->medicines = [''];
         $this->showModal = false;
         $this->resetErrorBag();
     }
 
-    public function addMedication()
+    public function addMedicine() // Changed from addMedication
     {
-        $this->medications[] = '';
+        $this->medicines[] = '';
     }
 
-    public function removeMedication($index)
+    public function removeMedicine($index) // Changed from removeMedication
     {
-        if (count($this->medications) > 1) {
-            unset($this->medications[$index]);
-            $this->medications = array_values($this->medications);
-        }
-    }
-
-    public function addLabTest()
-    {
-        $this->labTests[] = '';
-    }
-
-    public function removeLabTest($index)
-    {
-        if (count($this->labTests) > 1) {
-            unset($this->labTests[$index]);
-            $this->labTests = array_values($this->labTests);
+        if (count($this->medicines) > 1) {
+            unset($this->medicines[$index]);
+            $this->medicines = array_values($this->medicines);
         }
     }
 
@@ -110,44 +95,44 @@ class PrescriptionModal extends Component
             // Validate form
             $validated = $this->validate();
             
-            // Process signature file if uploaded
-            $signaturePath = null;
-            if ($this->signatureFile) {
-                $signaturePath = $this->signatureFile->store('prescriptions/signatures', 'public');
+            // Process file upload if exists
+            $filePath = null;
+            if ($this->fileUpload) {
+                $filePath = $this->fileUpload->store('prescriptions/files', 'public');
             }
 
-            // Filter out empty medications and lab tests
-            $medications = array_filter($validated['medications']);
-            $labTests = array_filter($validated['labTests']);
+            // Filter out empty medicines
+            $medicines = array_filter($validated['medicines']);
 
-            // Create prescription record
+            // Create prescription record matching your database schema
             $prescription = Prescription::create([
                 'doctor_id' => auth()->id(),
                 'patient_id' => $this->patientId,
                 'diagnosis' => $validated['diagnosis'],
-                'medications' => json_encode($medications),
+                'symptoms' => $validated['symptoms'], // Added symptoms
+                'medicines' => json_encode($medicines), // Changed to 'medicines'
                 'instructions' => $validated['instructions'],
                 'follow_up_date' => $validated['followUpDate'] ?: null,
                 'notes' => $validated['notes'] ?: null,
-                'lab_tests' => json_encode($labTests),
-                'signature_path' => $signaturePath,
-                'prescription_date' => now(),
-                'status' => 'active',
+                'file_path' => $filePath, // Changed to 'file_path'
             ]);
 
             Log::info('Prescription created: ' . $prescription->id);
 
-            // Generate PDF
-            $this->generatePDF($prescription);
+            // Generate PDF - Optional, since you have file_path for uploaded files
+            if (!$filePath || pathinfo($filePath, PATHINFO_EXTENSION) !== 'pdf') {
+                // Generate PDF if no file was uploaded or file is not PDF
+                $this->generatePDF($prescription);
+            }
 
             // Send as message in chat
-            $this->sendPrescriptionAsMessage($prescription);
+            $this->sendPrescriptionAsMessage($prescription, $filePath);
 
             // Close modal and reset
             $this->closeModal();
 
-            // Emit event to parent component
-            $this->dispatch('prescription-created', prescriptionId: $prescription->id);
+            // Emit event so other components (e.g., doctor chat) can react
+            $this->emit('prescriptionCreated', $prescription->id);
 
             // Show success message
             session()->flash('success', 'Prescription created and sent successfully!');
@@ -167,8 +152,7 @@ class PrescriptionModal extends Component
                 'prescription' => $prescription,
                 'doctor' => $doctor,
                 'patient' => $this->patient,
-                'medications' => json_decode($prescription->medications, true),
-                'labTests' => json_decode($prescription->lab_tests, true),
+                'medicines' => json_decode($prescription->medicines, true),
                 'date' => now()->format('F d, Y'),
                 'prescriptionCode' => 'RX-' . strtoupper(Str::random(8)),
             ];
@@ -180,45 +164,62 @@ class PrescriptionModal extends Component
             Storage::disk('public')->put($fileName, $pdf->output());
             
             // Update prescription with PDF path
-            $prescription->update(['pdf_path' => $fileName]);
+            $prescription->update(['file_path' => $fileName]);
             
             Log::info('PDF generated for prescription: ' . $prescription->id);
             
             return $pdf;
         } catch (\Exception $e) {
             Log::error('Error generating PDF: ' . $e->getMessage());
-            throw $e;
+            // Don't throw error, just log it
+            return null;
         }
     }
 
-    private function sendPrescriptionAsMessage($prescription)
+    private function sendPrescriptionAsMessage($prescription, $filePath = null)
     {
         try {
             $doctor = auth()->user();
+            
+            // Determine message type based on file
+            $messageType = 'file';
+            if ($filePath) {
+                $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+                if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+                    $messageType = 'image';
+                } elseif ($extension === 'pdf') {
+                    $messageType = 'prescription';
+                }
+            } else {
+                $messageType = 'prescription';
+            }
             
             // Create a message record for the prescription
             $chatMessage = new \App\Models\ChatMessage();
             $chatMessage->sender_id = $doctor->id;
             $chatMessage->receiver_id = $this->patientId;
             $chatMessage->message = "📋 Prescription for " . $this->patient->name;
-            $chatMessage->message_type = 'prescription';
-            $chatMessage->file_path = $prescription->pdf_path;
-            $chatMessage->file_size = Storage::disk('public')->size($prescription->pdf_path);
+            $chatMessage->message_type = $messageType;
+            $chatMessage->file_path = $prescription->file_path;
+            
+            // If we have a file, get its size
+            if ($prescription->file_path && Storage::disk('public')->exists($prescription->file_path)) {
+                $chatMessage->file_size = Storage::disk('public')->size($prescription->file_path);
+            }
+            
             $chatMessage->metadata = json_encode([
                 'prescription_id' => $prescription->id,
                 'diagnosis' => $prescription->diagnosis,
+                'symptoms' => $prescription->symptoms,
                 'follow_up_date' => $prescription->follow_up_date,
             ]);
             $chatMessage->save();
 
             Log::info('Prescription sent as chat message: ' . $chatMessage->id);
 
-            // Update prescription status
-            $prescription->update(['status' => 'sent']);
-
         } catch (\Exception $e) {
             Log::error('Error sending prescription as message: ' . $e->getMessage());
-            throw $e;
+            // Don't throw error, just log it
         }
     }
 

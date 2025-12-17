@@ -8,18 +8,26 @@ use Livewire\Attributes\Layout;
 use App\Models\User;
 use App\Models\ChatMessage;
 use App\Models\Appointment;
+use App\Models\Prescription;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 #[Layout('components.layouts.patient')]
 class Chat extends Component
 {
     use WithFileUploads;
 
+    protected $listeners = ['prescriptionCreated' => 'onPrescriptionCreated'];
+
     public $doctors = [];
     public $selectedDoctor = null;
     public $messages = [];
     public $newMessage = '';
     public $fileUpload;
+    
+    // Prescription related
+    public $showPrescriptionDetails = false;
+    public $selectedPrescription;
 
     public function mount()
     {
@@ -74,6 +82,7 @@ class Chat extends Component
                     $lastMessage->file_path = $lastMessageModel->file_path;
                     $lastMessage->created_at = $lastMessageModel->created_at; // Carbon instance
                     $lastMessage->read_at = $lastMessageModel->read_at;
+                    $lastMessage->metadata = $lastMessageModel->metadata;
                 }
 
                 $doc = new \stdClass();
@@ -136,14 +145,41 @@ class Chat extends Component
                 $o->message = $m->message;
                 $o->message_type = $m->message_type;
                 $o->file_path = $m->file_path;
+                $o->file_size = $m->file_size;
                 $o->created_at = $m->created_at; // Carbon
                 $o->read_at = $m->read_at;
+                // metadata may be stored as JSON or already cast to array; normalize to array|null
+                if (is_array($m->metadata)) {
+                    $o->metadata = $m->metadata;
+                } elseif ($m->metadata) {
+                    $o->metadata = json_decode($m->metadata, true) ?: null;
+                } else {
+                    $o->metadata = null;
+                }
                 return $o;
             })->all();
 
         } catch (\Exception $e) {
             Log::error('Error loading messages for patient: ' . $e->getMessage());
             $this->messages = [];
+        }
+    }
+
+    // Handle prescription created event so patient chat refreshes
+    public function onPrescriptionCreated($prescriptionId)
+    {
+        $this->loadRecentChats();
+        if ($this->selectedDoctor) {
+            // If the prescription was sent by the selected doctor, refresh messages
+            try {
+                $prescription = Prescription::find($prescriptionId);
+                if ($prescription && $prescription->doctor_id === $this->selectedDoctor->id) {
+                    $this->loadMessages();
+                    $this->dispatch('messageSent');
+                }
+            } catch (\Exception $e) {
+                Log::warning('onPrescriptionCreated: ' . $e->getMessage());
+            }
         }
     }
 
@@ -170,6 +206,7 @@ class Chat extends Component
                 $messageData['file_path'] = $filePath;
                 $messageData['message_type'] = $this->getFileType($this->fileUpload);
                 $messageData['message'] = 'Sent a file';
+                $messageData['file_size'] = $this->fileUpload->getSize();
             } else {
                 $messageData['message'] = trim($this->newMessage);
                 $messageData['message_type'] = 'text';
@@ -197,6 +234,8 @@ class Chat extends Component
         
         if (str_starts_with($mimeType, 'image/')) {
             return 'image';
+        } elseif ($mimeType === 'application/pdf') {
+            return 'prescription';
         } else {
             return 'file';
         }
@@ -243,8 +282,84 @@ class Chat extends Component
         ]);
     }
 
+    // =============== PRESCRIPTION METHODS ===============
+    
+    public function viewPrescription($prescriptionId)
+    {
+        try {
+            $this->selectedPrescription = Prescription::with('doctor')
+                ->where('id', $prescriptionId)
+                ->where('patient_id', auth()->id())
+                ->firstOrFail();
+            
+            $this->showPrescriptionDetails = true;
+            
+        } catch (\Exception $e) {
+            Log::error('Error viewing prescription: ' . $e->getMessage());
+            session()->flash('error', 'Prescription not found.');
+        }
+    }
+
+    public function viewPrescriptionFromMessage($messageId)
+    {
+        try {
+            $message = ChatMessage::findOrFail($messageId);
+            
+            // Check if patient has permission
+            if ($message->receiver_id !== auth()->id() && $message->sender_id !== auth()->id()) {
+                session()->flash('error', 'You do not have permission to view this prescription.');
+                return;
+            }
+            
+            if ($message->metadata) {
+                $metadata = json_decode($message->metadata, true);
+                if (isset($metadata['prescription_id'])) {
+                    $this->viewPrescription($metadata['prescription_id']);
+                }
+            }
+            
+        } catch (\Exception $e) {
+            Log::error('Error viewing prescription from message: ' . $e->getMessage());
+            session()->flash('error', 'Unable to view prescription details.');
+        }
+    }
+
+    public function closePrescriptionDetails()
+    {
+        $this->showPrescriptionDetails = false;
+        $this->selectedPrescription = null;
+    }
+
     public function render()
     {
         return view('livewire.patient.chat');
     }
+
+    public function downloadPrescriptionFromModal($prescriptionId)
+{
+    try {
+        $prescription = Prescription::findOrFail($prescriptionId);
+        
+        // Check if patient has permission
+        if ($prescription->patient_id !== auth()->id()) {
+            session()->flash('error', 'You do not have permission to download this prescription.');
+            return;
+        }
+        
+        if ($prescription->file_path) {
+            $path = storage_path('app/public/' . $prescription->file_path);
+            
+            if (file_exists($path)) {
+                $filename = 'prescription_' . $prescription->id . '_' . date('Y-m-d') . '.pdf';
+                return response()->download($path, $filename);
+            }
+        }
+        
+        session()->flash('error', 'Prescription file not found.');
+        
+    } catch (\Exception $e) {
+        Log::error('Error downloading prescription from modal: ' . $e->getMessage());
+        session()->flash('error', 'Failed to download prescription.');
+    }
+}
 }
