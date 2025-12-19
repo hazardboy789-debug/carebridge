@@ -131,8 +131,10 @@ class PrescriptionModal extends Component
             // Close modal and reset
             $this->closeModal();
 
-            // Emit event so other components (e.g., doctor chat) can react
-            $this->emit('prescriptionCreated', $prescription->id);
+            // Emit event so other components (e.g., doctor chat) can react (guard in case emit() is unavailable)
+            if (method_exists($this, 'emit')) {
+                $this->emit('prescriptionCreated', $prescription->id);
+            }
 
             // Show success message
             session()->flash('success', 'Prescription created and sent successfully!');
@@ -148,11 +150,16 @@ class PrescriptionModal extends Component
         try {
             $doctor = auth()->user();
             
+            $meds = is_array($prescription->medicines)
+                ? $prescription->medicines
+                : (json_decode($prescription->medicines, true) ?: []);
             $data = [
                 'prescription' => $prescription,
                 'doctor' => $doctor,
                 'patient' => $this->patient,
-                'medicines' => json_decode($prescription->medicines, true),
+                // provide both keys the PDF view may expect
+                'medicines' => $meds,
+                'medications' => $meds,
                 'date' => now()->format('F d, Y'),
                 'prescriptionCode' => 'RX-' . strtoupper(Str::random(8)),
             ];

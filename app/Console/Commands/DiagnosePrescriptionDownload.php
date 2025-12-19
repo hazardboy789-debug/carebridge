@@ -25,18 +25,22 @@ class DiagnosePrescriptionDownload extends Command
      */
     public function handle(): int
     {
-        $this->info('Checking latest prescription ChatMessage...');
-
-        $m = \App\Models\ChatMessage::where('message_type', 'prescription')->latest()->first();
-        if (! $m) {
+        $this->info('Listing all prescription ChatMessages...');
+        $messages = \App\Models\ChatMessage::where('message_type', 'prescription')->get();
+        if ($messages->isEmpty()) {
             $this->info('No prescription ChatMessage found');
         } else {
-            $this->line('ChatMessage ID: ' . $m->id);
-            $this->line('  file_path: ' . ($m->file_path ?? 'NULL'));
-            $path = storage_path('app/public/' . ($m->file_path ?? ''));
-            $this->line('  storage path: ' . $path);
-            $this->line('  file_exists: ' . (file_exists($path) ? 'yes' : 'no'));
-            $this->line('  metadata: ' . json_encode($m->metadata));
+            foreach ($messages as $msg) {
+                $path = storage_path('app/public/' . ($msg->file_path ?? ''));
+                $this->line('---');
+                $this->line('ChatMessage ID: ' . $msg->id);
+                $this->line('  sender_id: ' . $msg->sender_id);
+                $this->line('  receiver_id: ' . $msg->receiver_id);
+                $this->line('  file_path: ' . ($msg->file_path ?? 'NULL'));
+                $this->line('  storage path: ' . $path);
+                $this->line('  file_exists: ' . (file_exists($path) ? 'yes' : 'no'));
+                $this->line('  metadata: ' . json_encode($msg->metadata));
+            }
         }
 
         $this->info('Checking latest Prescription...');

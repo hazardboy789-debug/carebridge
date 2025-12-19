@@ -137,7 +137,7 @@
 </head>
 <body>
     <div class="header">
-        <div class="clinic-name">HealthCare Clinic</div>
+        <div class="clinic-name">Carebridge</div>
         <div class="clinic-info">
             123 Medical Street, Healthcare City<br>
             Phone: (123) 456-7890 | Email: info@healthcareclinic.com<br>
@@ -260,7 +260,7 @@
     <div class="footer">
         <p>This is an electronically generated prescription. No physical signature required.</p>
         <p>For verification: Scan QR code or visit our website with Prescription ID: {{ $prescriptionCode }}</p>
-        <p>© {{ date('Y') }} HealthCare Clinic. All rights reserved.</p>
+        <p>© {{ date('Y') }} Carebridge. All rights reserved.</p>
     </div>
 </body>
 </html>

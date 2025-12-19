@@ -155,7 +155,14 @@
                                                            class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                                                             Download PDF
                                                         </a>
+                                                    @elseif(isset($metadata['prescription_id']))
+                                                        <a href="{{ route('prescriptions.download', $metadata['prescription_id']) }}"
+                                                           target="_blank"
+                                                           class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                                            Download PDF
+                                                        </a>
                                                     @endif
+
                                                     @if(isset($metadata['prescription_id']))
                                                         <button wire:click="viewPrescriptionFromMessage({{ $message->id }})"
                                                                 class="text-xs px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
