@@ -1,4 +1,5 @@
-<div class="p-6">
+<div>
+    <div class="p-6">
     <h1 class="text-2xl font-semibold mb-4">Admin Dashboard</h1>
 
     <!-- Cards -->
@@ -131,3 +132,4 @@
     });
 </script>
 @endpush
+    </div>

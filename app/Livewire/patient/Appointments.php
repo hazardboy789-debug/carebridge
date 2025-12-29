@@ -3,7 +3,6 @@
 namespace App\Livewire\Patient;
 
 use Livewire\Component;
-use Livewire\Attributes\Layout;
 use App\Models\Appointment;
 use App\Models\User;
 use App\Models\DoctorDetail;
@@ -12,7 +11,6 @@ use App\Models\WalletTransaction;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-#[Layout('components.layouts.patient')]
 class Appointments extends Component
 {
     protected $listeners = [
@@ -296,6 +294,7 @@ class Appointments extends Component
 
     public function render()
     {
-        return view('livewire.patient.appointments');
+        return view('livewire.patient.appointments')
+            ->layout('components.layouts.patient', ['currentPatient' => auth()->user()]);
     }
 }

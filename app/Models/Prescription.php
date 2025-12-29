@@ -10,16 +10,21 @@ class Prescription extends Model
     protected $fillable = [
         'doctor_id',
         'patient_id',
+        'order_id',
         'diagnosis',
-        'symptoms', // This exists in your DB
-        'medicines', // This is 'medicines' not 'medications'
+        'symptoms',
+        'medicines',
         'instructions',
         'notes',
-        'file_path', // This is 'file_path' not 'signature_path' or 'pdf_path'
+        'file_path',
         'follow_up_date',
         'created_at',
         'updated_at',
     ];
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\PharmacyOrder::class, 'order_id');
+    }
 
     protected $casts = [
         'medicines' => 'array', // Cast medicines to array

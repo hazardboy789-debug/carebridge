@@ -1,28 +1,4 @@
 <div class="p-6">
-    {{-- Leaflet CSS and JS CDN --}}
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
-          crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
-            crossorigin=""></script>
-    
-    <style>
-        .leaflet-container {
-            z-index: 1;
-        }
-        .custom-div-icon {
-            background: none;
-            border: none;
-        }
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-    </style>
-
     <!-- Header -->
     <div class="mb-8">
         <h1 class="text-2xl font-bold text-gray-900 mb-2">Find Pharmacy & Medicines</h1>
@@ -341,7 +317,26 @@
                 </svg>
             </button>
         </div>
-        
+
+        <!-- Upload Prescription Button and Input -->
+        <div class="mb-6">
+            @if($selectedPharmacy)
+                <div class="mb-2 text-blue-800 font-semibold">Uploading for: {{ $selectedPharmacy->name }}</div>
+                <form wire:submit.prevent="uploadPrescription" enctype="multipart/form-data" class="flex items-center gap-4">
+                    <input type="file" wire:model="prescription" accept="application/pdf" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition">Upload Prescription</button>
+                </form>
+                @error('prescription')
+                    <span class="text-red-500 text-sm mt-2 block">{{ $message }}</span>
+                @enderror
+                @if($prescriptionPath)
+                    <div class="mt-2 text-green-600 text-sm">Prescription uploaded successfully. <a href="{{ Storage::url($prescriptionPath) }}" target="_blank" class="underline">View</a></div>
+                @endif
+            @else
+                <div class="text-red-600 font-semibold">Please select a pharmacy before uploading a prescription.</div>
+            @endif
+        </div>
+
         @if($selectedPharmacy->medicineStock->count() > 0)
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 @foreach($selectedPharmacy->medicineStock as $medicine)
@@ -396,6 +391,32 @@
         </div>
     @endif
 </div>
+
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+      crossorigin=""/>
+<style>
+    .leaflet-container {
+        z-index: 1;
+    }
+    .custom-div-icon {
+        background: none;
+        border: none;
+    }
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+        crossorigin=""></script>
 
 <script>
 document.addEventListener('livewire:init', () => {
@@ -611,3 +632,4 @@ document.addEventListener('livewire:init', () => {
     @endif
 });
 </script>
+@endpush

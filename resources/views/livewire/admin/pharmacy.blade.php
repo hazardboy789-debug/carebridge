@@ -1,3 +1,29 @@
+                                @if(isset($order))
+                                    <!-- Debug: List all prescriptions for this patient -->
+                                    @php
+                                        $allPrescriptions = \App\Models\Prescription::where('patient_id', $order->user_id)
+                                            ->orderByDesc('created_at')->get();
+                                    @endphp
+                                    @if($allPrescriptions->count())
+                                        <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                                            <div class="font-medium text-yellow-800 mb-1">Debug: All Prescriptions for this Patient</div>
+                                            <ul class="space-y-1 text-xs">
+                                                @foreach($allPrescriptions as $presc)
+                                                    <li>
+                                                        <span class="font-semibold">Pharmacy:</span> {{ optional($presc->pharmacy)->name ?? $presc->pharmacy_id }} |
+                                                        <span class="font-semibold">Order:</span> {{ $presc->order_id ?? 'N/A' }} |
+                                                        <span class="font-semibold">Uploaded:</span> {{ $presc->created_at->format('M d, Y H:i') }} |
+                                                        @if($presc->file_path)
+                                                            <a href="{{ asset('storage/' . $presc->file_path) }}" target="_blank" class="underline text-blue-700 hover:text-blue-900">View PDF</a>
+                                                        @else
+                                                            <span class="text-red-600">No file</span>
+                                                        @endif
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
+                                @endif
 <div class="p-6">
     <h1 class="text-2xl font-bold text-gray-900 mb-6">Pharmacy Management</h1>
 
@@ -247,7 +273,7 @@
                                         <div class="font-bold mt-1">${{ number_format($order->total_amount, 2) }}</div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Order Items -->
                                 <div class="border-t pt-3 mt-3">
                                     <div class="text-sm font-medium mb-2">Order Items:</div>
@@ -258,7 +284,77 @@
                                         </div>
                                     @endforeach
                                 </div>
-                                
+
+                                <!-- Uploaded Prescription(s) for this Order -->
+                                @php
+                                    // Prescriptions strictly linked to this order
+                                    $orderPrescriptions = \App\Models\Prescription::where('order_id', $order->id)
+                                        ->where('pharmacy_id', $order->pharmacy_id)
+                                        ->where('patient_id', $order->user_id)
+                                        ->orderByDesc('created_at')
+                                        ->get();
+                                    // Other prescriptions for this patient & pharmacy, not linked to this order
+                                    $otherPrescriptions = \App\Models\Prescription::where('order_id', '!=', $order->id)
+                                        ->where('pharmacy_id', $order->pharmacy_id)
+                                        ->where('patient_id', $order->user_id)
+                                        ->orderByDesc('created_at')
+                                        ->get();
+                                    // All prescriptions for this patient and this pharmacy (for fallback/debug)
+                                    $allPatientPharmacyPrescriptions = \App\Models\Prescription::where('patient_id', $order->user_id)
+                                        ->where('pharmacy_id', $order->pharmacy_id)
+                                        ->orderByDesc('created_at')->get();
+                                @endphp
+                                @if($orderPrescriptions->count())
+                                    <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                                        <div class="font-medium text-blue-800 mb-2">Prescription(s) for This Order:</div>
+                                        <ul class="space-y-1">
+                                            @foreach($orderPrescriptions as $prescription)
+                                                @if($prescription->file_path)
+                                                    <li>
+                                                        <a href="{{ asset('storage/' . $prescription->file_path) }}" target="_blank" class="underline text-blue-700 hover:text-blue-900">
+                                                            View PDF (Uploaded: {{ $prescription->created_at->format('M d, Y H:i') }})
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @elseif($otherPrescriptions->count())
+                                    <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                                        <div class="font-medium text-yellow-800 mb-2">Other Prescriptions for this Patient & Pharmacy</div>
+                                        <ul class="space-y-1 text-xs">
+                                            @foreach($otherPrescriptions as $presc)
+                                                <li>
+                                                    <span class="font-semibold">Order:</span> {{ $presc->order_id ?? 'N/A' }} |
+                                                    <span class="font-semibold">Uploaded:</span> {{ $presc->created_at->format('M d, Y H:i') }} |
+                                                    @if($presc->file_path)
+                                                        <a href="{{ asset('storage/' . $presc->file_path) }}" target="_blank" class="underline text-blue-700 hover:text-blue-900">View PDF</a>
+                                                    @else
+                                                        <span class="text-red-600">No file</span>
+                                                    @endif
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @else
+                                    <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded">
+                                        <div class="font-medium text-red-800 mb-2">No prescription found for this order. Showing all prescriptions for this patient & pharmacy (debug):</div>
+                                        <ul class="space-y-1 text-xs">
+                                            @foreach($allPatientPharmacyPrescriptions as $presc)
+                                                <li>
+                                                    <span class="font-semibold">Order:</span> {{ $presc->order_id ?? 'N/A' }} |
+                                                    <span class="font-semibold">Uploaded:</span> {{ $presc->created_at->format('M d, Y H:i') }} |
+                                                    @if($presc->file_path)
+                                                        <a href="{{ asset('storage/' . $presc->file_path) }}" target="_blank" class="underline text-blue-700 hover:text-blue-900">View PDF</a>
+                                                    @else
+                                                        <span class="text-red-600">No file</span>
+                                                    @endif
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+
                                 <!-- Order Actions -->
                                 <div class="flex justify-between items-center mt-4 pt-4 border-t">
                                     <div class="text-sm text-gray-600">

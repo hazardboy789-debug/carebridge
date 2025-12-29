@@ -4,9 +4,9 @@
       <div class="container">
         <div class="row align-items-center">
           <div class="col-lg-5">
-            <div class="hero-image" data-aos="fade-right" data-aos-delay="100">
+            <div class="hero-image">
               <img src="assets/img/health/staff-8.webp" alt="Healthcare Professional" class="img-fluid main-image">
-              <div class="floating-card emergency-card" data-aos="fade-up" data-aos-delay="300">
+              <div class="floating-card emergency-card">
                 <div class="card-content">
                   <i class="bi bi-telephone-fill"></i>
                   <div class="text">
@@ -15,7 +15,7 @@
                   </div>
                 </div>
               </div>
-              <div class="floating-card stats-card" data-aos="fade-up" data-aos-delay="400">
+              <div class="floating-card stats-card">
                 <div class="stat-item">
                   <span class="number">25K+</span>
                   <span class="label">Patients Treated</span>
@@ -29,7 +29,7 @@
           </div>
 
           <div class="col-lg-7">
-            <div class="hero-content" data-aos="fade-left" data-aos-delay="200">
+            <div class="hero-content">
               <div class="badge-container">
                 <span class="hero-badge">Trusted Healthcare Provider</span>
               </div>
@@ -102,17 +102,17 @@
     <!-- Home About Section -->
     <section id="home-about" class="home-about section">
 
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <div class="container">
 
         <div class="row">
-          <div class="col-lg-8 mx-auto text-center mb-5" data-aos="fade-up" data-aos-delay="150">
+          <div class="col-lg-8 mx-auto text-center mb-5">
             <h2 class="section-heading">Excellence in Healthcare Since 1985</h2>
             <p class="lead-description">We are committed to providing world-class medical care through innovation, compassion, and unwavering dedication to our patients' wellbeing and recovery.</p>
           </div>
         </div>
 
         <div class="row align-items-center gy-5">
-          <div class="col-lg-7" data-aos="fade-right" data-aos-delay="200">
+          <div class="col-lg-7">
             <div class="image-grid">
               <div class="primary-image">
                 <img src="assets/img/health/facilities-6.webp" alt="Modern hospital facility" class="img-fluid">
@@ -132,7 +132,7 @@
             </div>
           </div>
 
-          <div class="col-lg-5" data-aos="fade-left" data-aos-delay="300">
+          <div class="col-lg-5">
             <div class="content-wrapper">
               <div class="highlight-box">
                 <div class="highlight-icon">
@@ -205,16 +205,16 @@
     <section id="featured-departments" class="featured-departments section">
 
       <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
+      <div class="container section-title">
         <h2>Featured Departments</h2>
         <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
       </div><!-- End Section Title -->
 
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <div class="container">
 
         <div class="departments-showcase">
 
-          <div class="featured-department" data-aos="fade-up" data-aos-delay="200">
+          <div class="featured-department">
             <div class="row align-items-center">
               <div class="col-lg-6 order-lg-1">
                 <div class="department-content">
@@ -250,7 +250,7 @@
 
           <div class="departments-grid">
             <div class="row">
-              <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+              <div class="col-lg-4 col-md-6">
                 <div class="department-card">
                   <div class="card-icon">
                     <i class="fas fa-heartbeat"></i>
@@ -272,7 +272,7 @@
                 </div>
               </div>
 
-              <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="350">
+              <div class="col-lg-4 col-md-6">
                 <div class="department-card">
                   <div class="card-icon">
                     <i class="fas fa-brain"></i>
@@ -294,7 +294,7 @@
                 </div>
               </div>
 
-              <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+              <div class="col-lg-4 col-md-6">
                 <div class="department-card">
                   <div class="card-icon">
                     <i class="fas fa-cut"></i>
@@ -316,7 +316,7 @@
                 </div>
               </div>
 
-              <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="450">
+              <div class="col-lg-4 col-md-6">
                 <div class="department-card">
                   <div class="card-icon">
                     <i class="fas fa-baby"></i>
@@ -338,7 +338,7 @@
                 </div>
               </div>
 
-              <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+              <div class="col-lg-4 col-md-6">
                 <div class="department-card">
                   <div class="card-icon">
                     <i class="fas fa-eye"></i>
@@ -360,7 +360,7 @@
                 </div>
               </div>
 
-              <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="550">
+              <div class="col-lg-4 col-md-6">
                 <div class="department-card">
                   <div class="card-icon">
                     <i class="fas fa-band-aid"></i>
@@ -384,7 +384,7 @@
             </div>
           </div>
 
-          <div class="departments-cta" data-aos="fade-up" data-aos-delay="600">
+          <div class="departments-cta">
             <div class="cta-content">
               <h3 class="cta-title">Explore All Our Medical Departments</h3>
               <p class="cta-description">Et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores.</p>
@@ -402,16 +402,16 @@
     <section id="featured-services" class="featured-services section">
 
       <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
+      <div class="container section-title">
         <h2>Featured Services</h2>
         <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
       </div><!-- End Section Title -->
 
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <div class="container">
 
         <div class="row gy-4">
 
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+          <div class="col-lg-4 col-md-6">
             <div class="service-card">
               <div class="service-icon">
                 <i class="fas fa-heartbeat"></i>
@@ -427,7 +427,7 @@
             </div>
           </div><!-- End Service Card -->
 
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+          <div class="col-lg-4 col-md-6">
             <div class="service-card">
               <div class="service-icon">
                 <i class="fas fa-brain"></i>
@@ -443,7 +443,7 @@
             </div>
           </div><!-- End Service Card -->
 
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+          <div class="col-lg-4 col-md-6">
             <div class="service-card">
               <div class="service-icon">
                 <i class="fas fa-bone"></i>
@@ -459,7 +459,7 @@
             </div>
           </div><!-- End Service Card -->
 
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+          <div class="col-lg-4 col-md-6">
             <div class="service-card">
               <div class="service-icon">
                 <i class="fas fa-baby"></i>
@@ -475,7 +475,7 @@
             </div>
           </div><!-- End Service Card -->
 
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+          <div class="col-lg-4 col-md-6">
             <div class="service-card">
               <div class="service-icon">
                 <i class="fas fa-ribbon"></i>
@@ -491,7 +491,7 @@
             </div>
           </div><!-- End Service Card -->
 
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+          <div class="col-lg-4 col-md-6">
             <div class="service-card">
               <div class="service-icon">
                 <i class="fas fa-flask"></i>
@@ -513,306 +513,12 @@
 
     </section><!-- /Featured Services Section -->
 
-    <!-- Find A Doctor Section -->
-    <section id="find-a-doctor" class="find-a-doctor section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>Find A Doctor</h2>
-        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
-      </div><!-- End Section Title -->
-
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-        <div class="row justify-content-center" data-aos="fade-up" data-aos-delay="200">
-          <div class="col-lg-10">
-            <div class="search-header">
-              <h2>Discover Your Ideal Medical Specialist</h2>
-              <p>Connect with our network of certified healthcare professionals across all medical disciplines</p>
-            </div>
-
-            <div class="advanced-search-container">
-              <form class="search-form" action="forms/doctor-search.php" method="get">
-                <div class="search-row">
-                  <div class="search-field">
-                    <label>Practitioner Name</label>
-                    <div class="input-group">
-                      <i class="bi bi-search"></i>
-                      <input type="text" class="form-control" name="doctor_name" placeholder="Search by name...">
-                    </div>
-                  </div>
-                  <div class="search-field">
-                    <label>Medical Specialty</label>
-                    <div class="select-group">
-                      <i class="bi bi-plus-circle"></i>
-                      <select class="form-select" name="specialty">
-                        <option value="">Select specialty</option>
-                        <option value="cardiology">Cardiovascular Medicine</option>
-                        <option value="neurology">Neurological Sciences</option>
-                        <option value="orthopedics">Orthopedic Surgery</option>
-                        <option value="pediatrics">Pediatric Medicine</option>
-                        <option value="dermatology">Dermatological Care</option>
-                        <option value="oncology">Oncological Treatment</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="search-field">
-                    <label>Location</label>
-                    <div class="select-group">
-                      <i class="bi bi-geo-alt"></i>
-                      <select class="form-select" name="location">
-                        <option value="">All locations</option>
-                        <option value="downtown">Downtown Medical Center</option>
-                        <option value="northside">Northside Clinic</option>
-                        <option value="westend">West End Hospital</option>
-                      </select>
-                    </div>
-                  </div>
-                  <button type="submit" class="search-submit">
-                    <i class="bi bi-arrow-right"></i>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        <div class="specialists-showcase" data-aos="fade-up" data-aos-delay="300">
-          <div class="specialist-card featured" data-aos="slide-up" data-aos-delay="100">
-            <div class="card-content">
-              <div class="specialist-info">
-                <div class="profile-section">
-                  <div class="profile-image">
-                    <img src="assets/img/health/staff-1.webp" alt="Dr. Jennifer Morgan" class="img-fluid">
-                    <div class="online-status active"></div>
-                  </div>
-                  <div class="specialist-data">
-                    <h3>Dr. Jennifer Morgan</h3>
-                    <p class="specialty">Senior Cardiologist</p>
-                    <div class="credentials">
-                      <span class="badge">MD, FACC</span>
-                      <span class="experience">18 years</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="rating-info">
-                  <div class="stars-display">
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                  </div>
-                  <span class="score">4.9</span>
-                  <small>(142 patients)</small>
-                </div>
-              </div>
-              <div class="quick-actions">
-                <a href="#" class="action-btn outline">Profile</a>
-                <a href="#" class="action-btn primary">Consult</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="specialist-card" data-aos="slide-up" data-aos-delay="200">
-            <div class="card-content">
-              <div class="specialist-info">
-                <div class="profile-section">
-                  <div class="profile-image">
-                    <img src="assets/img/health/staff-3.webp" alt="Dr. Robert Kim" class="img-fluid">
-                    <div class="online-status busy"></div>
-                  </div>
-                  <div class="specialist-data">
-                    <h3>Dr. Robert Kim</h3>
-                    <p class="specialty">Neurosurgeon</p>
-                    <div class="credentials">
-                      <span class="badge">MD, PhD</span>
-                      <span class="experience">24 years</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="rating-info">
-                  <div class="stars-display">
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-half"></i>
-                  </div>
-                  <span class="score">4.8</span>
-                  <small>(98 patients)</small>
-                </div>
-              </div>
-              <div class="quick-actions">
-                <a href="#" class="action-btn outline">Profile</a>
-                <a href="#" class="action-btn primary">Schedule</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="specialist-card" data-aos="slide-up" data-aos-delay="300">
-            <div class="card-content">
-              <div class="specialist-info">
-                <div class="profile-section">
-                  <div class="profile-image">
-                    <img src="assets/img/health/staff-5.webp" alt="Dr. Sarah Thompson" class="img-fluid">
-                    <div class="online-status active"></div>
-                  </div>
-                  <div class="specialist-data">
-                    <h3>Dr. Sarah Thompson</h3>
-                    <p class="specialty">Pediatric Specialist</p>
-                    <div class="credentials">
-                      <span class="badge">MD, FAAP</span>
-                      <span class="experience">12 years</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="rating-info">
-                  <div class="stars-display">
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                  </div>
-                  <span class="score">5.0</span>
-                  <small>(156 patients)</small>
-                </div>
-              </div>
-              <div class="quick-actions">
-                <a href="#" class="action-btn outline">Profile</a>
-                <a href="#" class="action-btn primary">Book Now</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="specialist-card" data-aos="slide-up" data-aos-delay="400">
-            <div class="card-content">
-              <div class="specialist-info">
-                <div class="profile-section">
-                  <div class="profile-image">
-                    <img src="assets/img/health/staff-7.webp" alt="Dr. Michael Rivera" class="img-fluid">
-                    <div class="online-status offline"></div>
-                  </div>
-                  <div class="specialist-data">
-                    <h3>Dr. Michael Rivera</h3>
-                    <p class="specialty">Orthopedic Surgeon</p>
-                    <div class="credentials">
-                      <span class="badge">MD, FAAOS</span>
-                      <span class="experience">20 years</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="rating-info">
-                  <div class="stars-display">
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-half"></i>
-                  </div>
-                  <span class="score">4.7</span>
-                  <small>(134 patients)</small>
-                </div>
-              </div>
-              <div class="quick-actions">
-                <a href="#" class="action-btn outline">Profile</a>
-                <a href="#" class="action-btn primary">Request</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="specialist-card" data-aos="slide-up" data-aos-delay="500">
-            <div class="card-content">
-              <div class="specialist-info">
-                <div class="profile-section">
-                  <div class="profile-image">
-                    <img src="assets/img/health/staff-9.webp" alt="Dr. Lisa Garcia" class="img-fluid">
-                    <div class="online-status active"></div>
-                  </div>
-                  <div class="specialist-data">
-                    <h3>Dr. Lisa Garcia</h3>
-                    <p class="specialty">Dermatologist</p>
-                    <div class="credentials">
-                      <span class="badge">MD, FAAD</span>
-                      <span class="experience">15 years</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="rating-info">
-                  <div class="stars-display">
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star"></i>
-                  </div>
-                  <span class="score">4.6</span>
-                  <small>(89 patients)</small>
-                </div>
-              </div>
-              <div class="quick-actions">
-                <a href="#" class="action-btn outline">Profile</a>
-                <a href="#" class="action-btn primary">Consult</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="specialist-card" data-aos="slide-up" data-aos-delay="600">
-            <div class="card-content">
-              <div class="specialist-info">
-                <div class="profile-section">
-                  <div class="profile-image">
-                    <img src="assets/img/health/staff-12.webp" alt="Dr. Daniel Wong" class="img-fluid">
-                    <div class="online-status active"></div>
-                  </div>
-                  <div class="specialist-data">
-                    <h3>Dr. Daniel Wong</h3>
-                    <p class="specialty">Oncology Expert</p>
-                    <div class="credentials">
-                      <span class="badge">MD, FASCO</span>
-                      <span class="experience">21 years</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="rating-info">
-                  <div class="stars-display">
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                  </div>
-                  <span class="score">4.9</span>
-                  <small>(211 patients)</small>
-                </div>
-              </div>
-              <div class="quick-actions">
-                <a href="#" class="action-btn outline">Profile</a>
-                <a href="#" class="action-btn primary">Appointment</a>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="700">
-          <a href="specialists.html" class="view-all-link">
-            Browse Complete Directory
-            <i class="bi bi-chevron-right"></i>
-          </a>
-        </div>
-
-      </div>
-
-    </section><!-- /Find A Doctor Section -->
-
     <!-- Call To Action Section -->
     <section id="call-to-action" class="call-to-action section light-background">
 
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <div class="container">
 
-        <div class="hero-content" data-aos="fade-up" data-aos-delay="200">
+        <div class="hero-content">
           <div class="row align-items-center">
             <div class="col-lg-6">
               <div class="content-wrapper">
@@ -829,14 +535,14 @@
               </div>
             </div>
             <div class="col-lg-6">
-              <div class="hero-image" data-aos="zoom-in" data-aos-delay="300">
+              <div class="hero-image">
                 <img src="assets/img/health/showcase-2.webp" alt="Healthcare Excellence" class="img-fluid">
               </div>
             </div>
           </div>
         </div>
 
-        <div class="stats-section" data-aos="fade-up" data-aos-delay="400">
+        <div class="stats-section">
           <div class="row">
             <div class="col-lg-3 col-md-6">
               <div class="stat-item">
@@ -865,11 +571,11 @@
           </div>
         </div>
 
-        <div class="services-grid" data-aos="fade-up" data-aos-delay="500">
+        <div class="services-grid">
           <div class="row">
 
             <div class="col-lg-4 col-md-6">
-              <div class="service-card" data-aos="fade-up" data-aos-delay="100">
+              <div class="service-card">
                 <div class="service-icon">
                   <i class="fas fa-heartbeat"></i>
                 </div>
@@ -880,7 +586,7 @@
             </div>
 
             <div class="col-lg-4 col-md-6">
-              <div class="service-card" data-aos="fade-up" data-aos-delay="200">
+              <div class="service-card">
                 <div class="service-icon">
                   <i class="fas fa-brain"></i>
                 </div>
@@ -891,7 +597,7 @@
             </div>
 
             <div class="col-lg-4 col-md-6">
-              <div class="service-card" data-aos="fade-up" data-aos-delay="300">
+              <div class="service-card">
                 <div class="service-icon">
                   <i class="fas fa-shield-alt"></i>
                 </div>
@@ -904,7 +610,7 @@
           </div>
         </div>
 
-        <div class="contact-banner" data-aos="zoom-in" data-aos-delay="600">
+        <div class="contact-banner">
           <div class="banner-content">
             <div class="contact-info">
               <div class="contact-icon">
