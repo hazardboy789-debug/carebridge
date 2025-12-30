@@ -19,7 +19,7 @@
 
     <!-- Doctors Section -->
     <section id="doctors" class="doctors section">
-        <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="container">
 
             <!-- Filterable Doctor Directory -->
             <div class="doctor-directory mb-5">
@@ -53,7 +53,7 @@
                 </div>
 
                 <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
-                    <ul class="directory-filters isotope-filters" data-aos="fade-up" data-aos-delay="200">
+                    <ul class="directory-filters isotope-filters">
                         <li data-filter="*" class="filter-active">All Specialties</li>
                         <li data-filter=".filter-cardiology">Cardiology</li>
                         <li data-filter=".filter-pediatrics">Pediatrics</li>
@@ -63,7 +63,7 @@
                         <li data-filter=".filter-orthopedics">Orthopedics</li>
                     </ul><!-- End Directory Filters -->
 
-                    <div class="row gy-4 isotope-container" data-aos="fade-up" data-aos-delay="300">
+                    <div class="row gy-4 isotope-container">
 
                         <!-- Cardiology -->
                         <div class="col-lg-3 col-md-6 doctor-item isotope-item filter-cardiology">
@@ -250,7 +250,7 @@
             <!-- Featured Doctor Profile -->
             <div class="single-profile mt-5">
                 <div class="row align-items-center g-4">
-                    <div class="col-lg-5" data-aos="fade-right" data-aos-delay="150">
+                    <div class="col-lg-5">
                         <div class="profile-media">
                             <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" class="img-fluid" alt="Prof. Ranjith De Silva">
                             <div class="availability">
@@ -258,7 +258,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-7" data-aos="fade-left" data-aos-delay="200">
+                    <div class="col-lg-7">
                         <div class="profile-content">
                             <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
                                 <span class="badge role">Professor of Medicine</span>
@@ -288,7 +288,7 @@
             <div class="compact-view mt-5">
                 <h3 class="text-center mb-4">More Sri Lankan Specialists</h3>
                 <div class="row g-3">
-                    <div class="col-6 col-md-4 col-lg-2" data-aos="fade-up" data-aos-delay="100">
+                    <div class="col-6 col-md-4 col-lg-2">
                         <div class="minimal-card text-center">
                             <img src="https://images.unsplash.com/photo-1594824434340-7e7dfc37cabb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" alt="Dr. Kamala Wijeratne" class="avatar img-fluid" loading="lazy">
                             <div class="info">
@@ -297,7 +297,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-6 col-md-4 col-lg-2" data-aos="fade-up" data-aos-delay="150">
+                    <div class="col-6 col-md-4 col-lg-2">
                         <div class="minimal-card text-center">
                             <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" alt="Dr. Priyantha Gunaratne" class="avatar img-fluid" loading="lazy">
                             <div class="info">
@@ -306,7 +306,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-6 col-md-4 col-lg-2" data-aos="fade-up" data-aos-delay="200">
+                    <div class="col-6 col-md-4 col-lg-2">
                         <div class="minimal-card text-center">
                             <img src="https://images.unsplash.com/photo-1527613426441-4da17471b66d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" alt="Dr. Samadhi Rajapaksha" class="avatar img-fluid" loading="lazy">
                             <div class="info">
@@ -315,7 +315,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-6 col-md-4 col-lg-2" data-aos="fade-up" data-aos-delay="250">
+                    <div class="col-6 col-md-4 col-lg-2">
                         <div class="minimal-card text-center">
                             <img src="https://images.unsplash.com/photo-1537368910025-700350fe46c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" alt="Dr. Lakshman Perera" class="avatar img-fluid" loading="lazy">
                             <div class="info">
@@ -324,7 +324,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-6 col-md-4 col-lg-2" data-aos="fade-up" data-aos-delay="300">
+                    <div class="col-6 col-md-4 col-lg-2">
                         <div class="minimal-card text-center">
                             <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" alt="Dr. Nadeeka Gamage" class="avatar img-fluid" loading="lazy">
                             <div class="info">
@@ -333,7 +333,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-6 col-md-4 col-lg-2" data-aos="fade-up" data-aos-delay="350">
+                    <div class="col-6 col-md-4 col-lg-2">
                         <div class="minimal-card text-center">
                             <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" alt="Dr. Roshan Mendis" class="avatar img-fluid" loading="lazy">
                             <div class="info">
@@ -348,7 +348,7 @@
             <!-- Doctor with Tabs (Sri Lankan Context) -->
             <div class="profile-tabs mt-5">
                 <div class="row g-4">
-                    <div class="col-lg-4" data-aos="fade-right" data-aos-delay="150">
+                    <div class="col-lg-4">
                         <div class="tab-profile-card">
                             <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="img-fluid rounded-3" alt="Dr. Tharindu Jayawardena" loading="lazy">
                             <div class="pt-3">
@@ -365,7 +365,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-8" data-aos="fade-left" data-aos-delay="200">
+                    <div class="col-lg-8">
                         <ul class="nav nav-pills mb-3" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#sri-doc-tab-1" type="button" role="tab">Specializations</button>
@@ -544,12 +544,9 @@
         padding: 10px 20px;
         border-radius: 8px;
         font-weight: 600;
-        transition: all 0.3s;
     }
     
     .btn-appointment:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(52, 183, 241, 0.3);
         color: white;
     }
     
@@ -560,7 +557,6 @@
         padding: 10px 20px;
         border-radius: 8px;
         font-weight: 500;
-        transition: all 0.3s;
     }
     
     .btn-soft:hover {
@@ -573,13 +569,7 @@
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        transition: transform 0.3s ease;
         height: 100%;
-    }
-    
-    .doctor-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
     }
     
     .doctor-media {
@@ -592,11 +582,6 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.5s ease;
-    }
-    
-    .doctor-card:hover .doctor-media img {
-        transform: scale(1.05);
     }
     
     .tag {
@@ -757,13 +742,11 @@
         background: var(--light-bg);
         border-radius: 10px;
         padding: 20px;
-        transition: all 0.3s ease;
         height: 100%;
     }
     
     .minimal-card:hover {
         background: white;
-        transform: translateY(-5px);
         box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
     
@@ -820,12 +803,10 @@
         border-radius: 8px;
         padding: 15px;
         text-align: center;
-        transition: all 0.3s;
     }
     
     .schedule-grid .slot:hover {
         background: rgba(52, 183, 241, 0.1);
-        transform: translateY(-2px);
     }
     
     .schedule-grid .slot strong {
@@ -855,7 +836,6 @@
         cursor: pointer;
         font-weight: 600;
         color: #64748b;
-        transition: all 0.3s;
     }
     
     .directory-filters li.filter-active,
