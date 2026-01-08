@@ -15,6 +15,13 @@
             </div>
 
             <div class="mt-4">
+                <x-label for="contact" value="{{ __('Contact / Phone') }}" />
+                <x-input id="contact" class="block mt-1 w-full" type="text" name="contact" :value="old('contact')" required autocomplete="tel" />
+            </div>
+
+            <input type="hidden" name="role" value="patient" />
+
+            <div class="mt-4">
                 <x-label for="email" value="{{ __('Email') }}" />
                 <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
             </div>

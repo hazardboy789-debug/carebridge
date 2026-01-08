@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\RegisterController;
 
 // Livewire v3 Components
 use App\Livewire\CustomLogin;
@@ -69,6 +70,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', function () {
         return view('auth.register');
     })->name('register');
+
+    // Handle registration submissions (AJAX / form POST)
+    Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
 });
 
 // Logout

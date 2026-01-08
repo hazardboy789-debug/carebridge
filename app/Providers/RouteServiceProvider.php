@@ -24,9 +24,10 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Add these lines to catch any direct attempts to access these routes
-        Route::redirect('/login', '/', 301);
-        Route::redirect('/register', '/', 301);
+        // Previously redirected some auth routes to the homepage which interfered
+        // with custom POST handlers (AJAX). Removed redirects to allow proper
+        // route handling for `/login` and `/register` methods defined in
+        // `routes/web.php`.
 
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());

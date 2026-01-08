@@ -6,7 +6,7 @@
                         <div class="flex flex-col gap-1">
                             <p
                                 class="text-text-light-primary dark:text-text-dark-primary text-3xl font-bold tracking-tight">
-                                Good Morning, Maria</p>
+                                Good Morning, {{ auth()->user()?->name ?? 'Patient' }}</p>
                             <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal">
                                 Here's your summary for today.</p>
                         </div>

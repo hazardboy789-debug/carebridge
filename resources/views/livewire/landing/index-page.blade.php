@@ -1,101 +1,94 @@
 <div>
-    <!-- Hero Section -->
-    <section id="hero" class="hero section">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-5">
-                    <div class="hero-image position-relative">
-                        <img src="https://images.unsplash.com/photo-1586773860418-dc22f8b874bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
-                             alt="Healthcare Professional" class="img-fluid main-image rounded-3">
-                        <div class="floating-card emergency-card position-absolute top-0 start-0 bg-white shadow rounded-3 p-3">
-                            <div class="card-content d-flex align-items-center">
-                                <i class="bi bi-telephone-fill text-danger fs-4 me-3"></i>
-                                <div class="text">
-                                    <span class="label d-block text-muted small">24/7 Emergency</span>
-                                    <span class="number fw-bold">1999</span>
+<!-- Hero Section -->
+<section id="hero" class="hero section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-5">
+                <div class="hero-image position-relative">
+                    <img src="{{ asset('assets/images/landing/doc.png') }}" 
+                        alt="Healthcare Professional" class="img-fluid main-image rounded-3">
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="hero-content">
+                    <div class="badge-container mb-3">
+                        <span class="hero-badge bg-primary text-white px-3 py-1 rounded-pill small fw-bold">Sri Lanka's Leading Telemedicine</span>
+                    </div>
+
+                    <!-- Image added next to the heading -->
+                    <div class="heading-with-image d-flex align-items-start mb-4">
+                        <div class="me-4">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3063/3063812.png" 
+                                 alt="Healthcare Icon" 
+                                 class="healthcare-icon" 
+                                 style="width: 60px; height: 60px;">
+                        </div>
+                        <div>
+                            <h1 class="hero-title display-4 fw-bold mb-0">Healthcare at Your Fingertips Across Sri Lanka</h1>
+                        </div>
+                    </div>
+                    
+                    <p class="hero-description lead mb-4">CareBridge connects you with certified Sri Lankan doctors via secure online consultations. Access quality healthcare from anywhere - whether you're in Colombo, Kandy, Jaffna, or any of our 25 districts.</p>
+
+                    <div class="hero-stats mb-4">
+                        <div class="stat-group d-flex flex-wrap gap-4">
+                            <div class="stat d-flex align-items-center">
+                                <i class="bi bi-award text-primary fs-4 me-3"></i>
+                                <div class="stat-text">
+                                    <span class="number fw-bold d-block fs-5">300+</span>
+                                    <span class="label text-muted">Certified Doctors</span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="floating-card stats-card position-absolute bottom-0 end-0 bg-white shadow rounded-3 p-3">
-                            <div class="stat-item text-center mb-2">
-                                <span class="number fw-bold text-primary d-block">50K+</span>
-                                <span class="label text-muted small">Patients Served</span>
+                            <div class="stat d-flex align-items-center">
+                                <i class="bi bi-people text-primary fs-4 me-3"></i>
+                                <div class="stat-text">
+                                    <span class="number fw-bold d-block fs-5">25+</span>
+                                    <span class="label text-muted">Medical Specialties</span>
+                                </div>
                             </div>
-                            <div class="stat-item text-center">
-                                <span class="number fw-bold text-primary d-block">98%</span>
-                                <span class="label text-muted small">Satisfaction Rate</span>
+                            <div class="stat d-flex align-items-center">
+                                <i class="bi bi-geo-alt text-primary fs-4 me-3"></i>
+                                <div class="stat-text">
+                                    <span class="number fw-bold d-block fs-5">25</span>
+                                    <span class="label text-muted">Districts Covered</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col-lg-7">
-                    <div class="hero-content">
-                        <div class="badge-container mb-3">
-                            <span class="hero-badge bg-primary text-white px-3 py-1 rounded-pill small fw-bold">Sri Lanka's Leading Telemedicine</span>
+                    <div class="cta-section">
+                        <div class="cta-buttons d-flex flex-wrap gap-3 mb-4">
+                            <a href="#" class="btn btn-primary btn-lg px-4 py-3">
+                                <i class="bi bi-camera-video me-2"></i>
+                                Start Online Consultation
+                            </a>
+                            <a href="#" class="btn btn-outline-primary btn-lg px-4 py-3">
+                                <i class="bi bi-play-circle me-2"></i>
+                                How It Works
+                            </a>
                         </div>
 
-                        <h1 class="hero-title display-4 fw-bold mb-4">Healthcare at Your Fingertips Across Sri Lanka</h1>
-                        <p class="hero-description lead mb-4">CareBridge connects you with certified Sri Lankan doctors via secure online consultations. Access quality healthcare from anywhere - whether you're in Colombo, Kandy, Jaffna, or any of our 25 districts.</p>
-
-                        <div class="hero-stats mb-4">
-                            <div class="stat-group d-flex flex-wrap gap-4">
-                                <div class="stat d-flex align-items-center">
-                                    <i class="bi bi-award text-primary fs-4 me-3"></i>
-                                    <div class="stat-text">
-                                        <span class="number fw-bold d-block fs-5">300+</span>
-                                        <span class="label text-muted">Certified Doctors</span>
-                                    </div>
-                                </div>
-                                <div class="stat d-flex align-items-center">
-                                    <i class="bi bi-people text-primary fs-4 me-3"></i>
-                                    <div class="stat-text">
-                                        <span class="number fw-bold d-block fs-5">25+</span>
-                                        <span class="label text-muted">Medical Specialties</span>
-                                    </div>
-                                </div>
-                                <div class="stat d-flex align-items-center">
-                                    <i class="bi bi-geo-alt text-primary fs-4 me-3"></i>
-                                    <div class="stat-text">
-                                        <span class="number fw-bold d-block fs-5">25</span>
-                                        <span class="label text-muted">Districts Covered</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="cta-section">
-                            <div class="cta-buttons d-flex flex-wrap gap-3 mb-4">
-                                <a href="#" class="btn btn-primary btn-lg px-4 py-3">
-                                    <i class="bi bi-camera-video me-2"></i>
-                                    Start Online Consultation
-                                </a>
-                                <a href="#" class="btn btn-outline-primary btn-lg px-4 py-3">
-                                    <i class="bi bi-play-circle me-2"></i>
-                                    How It Works
-                                </a>
-                            </div>
-
-                            <div class="quick-actions d-flex flex-wrap gap-4">
-                                <a href="#" class="action-link text-decoration-none d-flex align-items-center">
-                                    <i class="bi bi-calendar-check text-primary me-2"></i>
-                                    <span>Book Appointment</span>
-                                </a>
-                                <a href="#" class="action-link text-decoration-none d-flex align-items-center">
-                                    <i class="bi bi-chat-dots text-primary me-2"></i>
-                                    <span>Live Chat Support</span>
-                                </a>
-                                <a href="#" class="action-link text-decoration-none d-flex align-items-center">
-                                    <i class="bi bi-truck text-primary me-2"></i>
-                                    <span>Medicine Delivery</span>
-                                </a>
-                            </div>
+                        <div class="quick-actions d-flex flex-wrap gap-4">
+                            <a href="#" class="action-link text-decoration-none d-flex align-items-center">
+                                <i class="bi bi-calendar-check text-primary me-2"></i>
+                                <span>Book Appointment</span>
+                            </a>
+                            <a href="#" class="action-link text-decoration-none d-flex align-items-center">
+                                <i class="bi bi-chat-dots text-primary me-2"></i>
+                                <span>Live Chat Support</span>
+                            </a>
+                            <a href="#" class="action-link text-decoration-none d-flex align-items-center">
+                                <i class="bi bi-truck text-primary me-2"></i>
+                                <span>Medicine Delivery</span>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section><!-- /Hero Section -->
+    </div>
+</section><!-- /Hero Section -->
 
     <!-- Home About Section -->
     <section id="home-about" class="home-about section py-5">
@@ -111,8 +104,8 @@
                 <div class="col-lg-7">
                     <div class="image-grid position-relative">
                         <div class="primary-image mb-3">
-                            <img src="https://images.unsplash.com/photo-1516549655669-df4f6a6f8d64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                                 alt="Doctor consultation" class="img-fluid rounded-3">
+                               <img src="{{ asset('assets/images/hospital.jpg') }}" 
+                                   alt="Doctor consultation" class="img-fluid rounded-3">
                             <div class="certification-badge position-absolute top-0 start-0 bg-white shadow rounded-pill px-3 py-2 m-3">
                                 <i class="bi bi-shield-check text-primary me-2"></i>
                                 <span class="fw-bold">SLMC Verified</span>
@@ -120,8 +113,8 @@
                         </div>
                         <div class="secondary-images d-flex gap-3">
                             <div class="small-image flex-grow-1">
-                                <img src="https://images.unsplash.com/photo-1584467735871-8db9ac8d091e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
-                                     alt="Medical support" class="img-fluid rounded-3">
+                                <img src="{{ asset('assets/images/landing/support.jpg') }}" 
+                                         alt="Medical support" class="img-fluid rounded-3">
                             </div>
                             <div class="small-image flex-grow-1">
                                 <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 

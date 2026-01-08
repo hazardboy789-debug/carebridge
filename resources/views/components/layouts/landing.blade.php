@@ -286,6 +286,7 @@
 
                                 <form id="registerForm" method="POST" action="{{ route('register') }}">
                                     @csrf
+                                    <input type="hidden" name="role" value="patient" />
                                     <!-- Name and Email -->
                                     <div class="form-grid">
                                         <div>
@@ -524,7 +525,7 @@
                 submitButton.disabled = true;
                 submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Creating Account...';
 
-                fetch('{{ route('register') }}', {
+                fetch('{{ route('register.post') }}', {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -532,41 +533,58 @@
                         'Accept': 'application/json'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    const contentType = response.headers.get('content-type') || '';
+                    if (!response.ok) {
+                        if (contentType.indexOf('application/json') !== -1) {
+                            return response.json().then(errJson => Promise.reject({ type: 'json', body: errJson, status: response.status }));
+                        }
+                        return response.text().then(text => Promise.reject({ type: 'text', body: text, status: response.status }));
+                    }
+
+                    if (contentType.indexOf('application/json') !== -1) {
+                        return response.json();
+                    }
+
+                    return response.text().then(text => Promise.reject({ type: 'text', body: text, status: response.status }));
+                })
                 .then(data => {
+                    // Successful JSON response
                     if (data.success) {
-                        // Show success message
                         successText.textContent = data.message;
                         successMessage.style.display = 'block';
-                        
-                        // Reset form
                         registerForm.reset();
-                        
-                        // Redirect after short delay
-                        setTimeout(() => {
-                            window.location.href = data.redirect;
-                        }, 1500);
-                    } else {
-                        // Show error message
-                        errorText.textContent = data.message || 'Registration failed. Please try again.';
-                        errorMessage.style.display = 'block';
-                        
-                        // Show field-specific errors if available
-                        if (data.errors) {
-                            showFieldErrors(data.errors);
-                        }
-                        
-                        // Re-enable submit button
-                        submitButton.disabled = false;
-                        submitButton.innerHTML = originalText;
+                        setTimeout(() => { window.location.href = data.redirect; }, 1500);
+                        return;
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    errorText.textContent = 'An unexpected error occurred. Please try again.';
+
+                    // Backend returned JSON with success: false
+                    errorText.textContent = data.message || 'Registration failed. Please try again.';
                     errorMessage.style.display = 'block';
-                    
-                    // Re-enable submit button
+                    if (data.errors) showFieldErrors(data.errors);
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                })
+                .catch(err => {
+                    console.error('Register fetch error:', err);
+
+                    if (err && err.type === 'json') {
+                        const data = err.body || {};
+                        errorText.textContent = data.message || 'Registration failed.';
+                        errorMessage.style.display = 'block';
+                        if (data.errors) showFieldErrors(data.errors);
+                    } else if (err && err.type === 'text') {
+                        // Server returned HTML/text (likely an error page)
+                        errorText.textContent = 'Server error (expected JSON). Response snippet: ' + (err.body || '').substring(0, 300);
+                        errorMessage.style.display = 'block';
+                    } else if (err instanceof Error) {
+                        errorText.textContent = err.message;
+                        errorMessage.style.display = 'block';
+                    } else {
+                        errorText.textContent = 'An unexpected error occurred. Please try again.';
+                        errorMessage.style.display = 'block';
+                    }
+
                     submitButton.disabled = false;
                     submitButton.innerHTML = originalText;
                 });

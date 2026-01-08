@@ -19,7 +19,7 @@
             </div>
             
             @if(!$isLocationEnabled)
-                <button wire:click="requestLocation" 
+                <button wire:click="enableLocationAndFindPharmacies" onclick="requestUserLocationFromClient()" 
                         class="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-sm hover:shadow-md">
                     <div class="flex items-center gap-2">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -214,10 +214,16 @@
     @endif
 
     <!-- Leaflet Map Integration -->
-    @if($showMap && $isLocationEnabled)
+    @if($showMap)
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-gray-900">Nearby Pharmacies Map</h3>
+            <h3 class="text-lg font-semibold text-gray-900">
+                @if($isFindingNearbyPharmacies)
+                    Finding Your Location...
+                @else
+                    Nearby Pharmacies Map
+                @endif
+            </h3>
             <button wire:click="hideMap" 
                     class="text-gray-500 hover:text-gray-700">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -225,8 +231,22 @@
                 </svg>
             </button>
         </div>
-        <div id="pharmacy-map" class="w-full h-96 rounded-lg border border-gray-300"></div>
-        <p class="text-sm text-gray-500 mt-2">Showing pharmacies within 20km radius from your location</p>
+        
+        @if($isFindingNearbyPharmacies)
+            <div class="w-full h-96 rounded-lg border border-gray-300 bg-gray-50 flex items-center justify-center">
+                <div class="text-center">
+                    <svg class="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="text-gray-600 font-medium">Getting your location...</p>
+                    <p class="text-gray-500 text-sm mt-1">Please allow location access in your browser</p>
+                </div>
+            </div>
+        @else
+            <div id="pharmacy-map" class="w-full h-96 rounded-lg border border-gray-300"></div>
+            <p class="text-sm text-gray-500 mt-2">Showing pharmacies within 20km radius from your location</p>
+        @endif
     </div>
     @endif
 
@@ -288,8 +308,15 @@
                                 class="flex-1 bg-blue-600 text-white py-2.5 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-sm">
                             View Medicines
                         </button>
-                        <a href="https://www.openstreetmap.org/directions?from=&to={{ $pharmacy->latitude ?? 0 }},{{ $pharmacy->longitude ?? 0 }}" 
+                        @php
+                            // Override coordinates for 'Rajya Osu Sala' pharmacy
+                            $pharmacyName = strtolower(trim($pharmacy->name));
+                            $dirLat = ($pharmacyName === 'rajya osu sala' || $pharmacyName === 'raja osu sala') ? 6.9280 : ($pharmacy->latitude ?? 0);
+                            $dirLng = ($pharmacyName === 'rajya osu sala' || $pharmacyName === 'raja osu sala') ? 79.8630 : ($pharmacy->longitude ?? 0);
+                        @endphp
+                        <a href="https://www.openstreetmap.org/directions?from=&to={{ $dirLat }},{{ $dirLng }}" 
                            target="_blank"
+                           onclick="updatePharmacyCoords({{ $pharmacy->id }}, {{ $dirLat }}, {{ $dirLng }})"
                            class="bg-gray-100 text-gray-700 py-2.5 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition shadow-sm flex items-center">
                             <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd" />
@@ -384,6 +411,23 @@
     </div>
     @endif
 
+@push('scripts')
+<script>
+    function updatePharmacyCoords(id, lat, lng) {
+        // Update coordinates in background (non-blocking)
+        if (lat && lng && lat !== 0 && lng !== 0) {
+            try {
+                if (typeof Livewire !== 'undefined') {
+                    Livewire.find('{{ $_instance->getId() }}').call('updatePharmacyCoordinates', id, lat, lng);
+                }
+            } catch (e) {
+                console.log('Could not update pharmacy coordinates:', e);
+            }
+        }
+    }
+</script>
+@endpush
+
     <!-- Pagination -->
     @if($pharmacies->hasPages())
         <div class="mt-8">
@@ -420,6 +464,27 @@
 
 <script>
 document.addEventListener('livewire:init', () => {
+    // Client helper: directly request geolocation and notify Livewire immediately
+    window.requestUserLocationFromClient = function() {
+        console.log('Requesting user location...');
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                console.log('Location obtained:', lat, lng);
+                
+                // Use Livewire v3 syntax to call the server method
+                @this.call('setUserLocation', lat, lng);
+                
+                initMap(lat, lng);
+            }, function(error) {
+                console.error('Geolocation error:', error);
+                alert('Unable to get your location. Please enable location services. Error: ' + error.message);
+            }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+        } else {
+            alert('Geolocation is not supported by your browser.');
+        }
+    };
     // Check if Leaflet is loaded (it should be via CDN)
     if (typeof L === 'undefined') {
         console.error('Leaflet is not loaded. Make sure CDN links are included.');
@@ -432,31 +497,31 @@ document.addEventListener('livewire:init', () => {
 
     // Request user location - server dispatches a browser event
     window.addEventListener('request-user-location', () => {
+        console.log('Browser event: request-user-location received');
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
+                    console.log('Location from event:', lat, lng);
 
-                    // Notify server (component listens) and initialize map immediately
-                    if (window.Livewire && typeof Livewire.emit === 'function') {
-                        Livewire.emit('setUserLocation', lat, lng);
-                    }
+                    // Use Livewire v3 syntax
+                    @this.call('setUserLocation', lat, lng);
 
                     initMap(lat, lng);
                 },
                 (error) => {
                     console.error('Geolocation error:', error);
-                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { type: 'error', message: 'Unable to get your location. Please enable location services.' } }));
+                    alert('Unable to get your location. Error: ' + error.message);
                 },
                 {
                     enableHighAccuracy: true,
-                    timeout: 5000,
+                    timeout: 10000,
                     maximumAge: 0
                 }
             );
         } else {
-            window.dispatchEvent(new CustomEvent('show-toast', { detail: { type: 'error', message: 'Geolocation is not supported by your browser.' } }));
+            alert('Geolocation is not supported by your browser.');
         }
     });
 
