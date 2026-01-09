@@ -74,17 +74,76 @@ class Appointments extends Component
                 ->first();
 
             if ($appointment) {
-                $appointment->update([
-                    'status' => 'confirmed',
-                    'notes' => $this->appointmentNotes
-                ]);
-                
-                session()->flash('message', 'Appointment approved successfully.');
-                $this->closeModal();
-                $this->loadAppointments();
+                \DB::beginTransaction();
+                try {
+                    $appointment->update([
+                        'status' => 'confirmed',
+                        'notes' => $this->appointmentNotes
+                    ]);
+
+                    // Transfer payment to doctor wallet now that appointment is approved
+                    if ($appointment->fee > 0 && $appointment->payment_status === 'pending') {
+                        $doctor = $appointment->doctor;
+                        $patient = $appointment->patient;
+                        $fee = $appointment->fee;
+
+                        // Compute commission and net amounts
+                        $commissionPercent = floatval(config('payments.platform_commission', 0.10));
+                        $commission = round($fee * $commissionPercent, 2);
+                        $netToDoctor = round($fee - $commission, 2);
+
+                        // Credit doctor with net amount
+                        $doctorWallet = $doctor->getOrCreateWallet();
+                        $doctorWallet->balance = $doctorWallet->balance + $netToDoctor;
+                        $doctorWallet->save();
+
+                        \App\Models\WalletTransaction::create([
+                            'wallet_id' => $doctorWallet->id,
+                            'type' => 'credit',
+                            'amount' => $netToDoctor,
+                            'description' => 'Appointment payment (net) - Patient: ' . $patient->name,
+                            'status' => 'completed',
+                            'appointment_id' => $appointment->id,
+                        ]);
+
+                        // Credit platform commission to admin wallet
+                        $platformOwner = \App\Models\User::where('role', 'admin')->first();
+                        if ($platformOwner) {
+                            $platformWallet = $platformOwner->getOrCreateWallet();
+                            $platformWallet->balance = $platformWallet->balance + $commission;
+                            $platformWallet->save();
+
+                            \App\Models\WalletTransaction::create([
+                                'wallet_id' => $platformWallet->id,
+                                'type' => 'credit',
+                                'amount' => $commission,
+                                'description' => 'Platform commission - Appointment #' . $appointment->id,
+                                'status' => 'completed',
+                                'appointment_id' => $appointment->id,
+                            ]);
+                        }
+
+                        // Update patient transaction status from pending to completed
+                        \App\Models\WalletTransaction::where('appointment_id', $appointment->id)
+                            ->where('type', 'debit')
+                            ->where('status', 'pending')
+                            ->update(['status' => 'completed', 'description' => 'Appointment payment - Dr. ' . $doctor->name]);
+
+                        // Mark payment as paid
+                        $appointment->update(['payment_status' => 'paid']);
+                    }
+
+                    \DB::commit();
+                    session()->flash('message', 'Appointment approved successfully.');
+                    $this->closeModal();
+                    $this->loadAppointments();
+                } catch (\Exception $e) {
+                    \DB::rollBack();
+                    throw $e;
+                }
             }
         } catch (\Exception $e) {
-            session()->flash('error', 'Failed to approve appointment.');
+            session()->flash('error', 'Failed to approve appointment: ' . $e->getMessage());
         }
     }
 
@@ -96,17 +155,56 @@ class Appointments extends Component
                 ->first();
 
             if ($appointment) {
-                $appointment->update([
-                    'status' => 'cancelled',
-                    'notes' => $this->appointmentNotes
-                ]);
-                
-                session()->flash('message', 'Appointment rejected successfully.');
-                $this->closeModal();
-                $this->loadAppointments();
+                \DB::beginTransaction();
+                try {
+                    $appointment->update([
+                        'status' => 'cancelled',
+                        'notes' => $this->appointmentNotes
+                    ]);
+
+                    // Refund patient if payment was held
+                    if ($appointment->fee > 0 && $appointment->payment_status === 'pending') {
+                        $patient = $appointment->patient;
+                        $patientWallet = $patient->getOrCreateWallet();
+                        $fee = $appointment->fee;
+
+                        // Refund the full amount back to patient
+                        $patientWallet->balance = $patientWallet->balance + $fee;
+                        $patientWallet->save();
+
+                        \App\Models\WalletTransaction::create([
+                            'wallet_id' => $patientWallet->id,
+                            'type' => 'credit',
+                            'amount' => $fee,
+                            'description' => 'Appointment refund - Rejected by Dr. ' . $appointment->doctor->name,
+                            'status' => 'completed',
+                            'appointment_id' => $appointment->id,
+                        ]);
+
+                        // Update the original debit transaction status
+                        \App\Models\WalletTransaction::where('appointment_id', $appointment->id)
+                            ->where('type', 'debit')
+                            ->where('status', 'pending')
+                            ->update([
+                                'status' => 'failed',
+                                'description' => 'Appointment cancelled - Refunded by Dr. ' . $appointment->doctor->name
+                            ]);
+
+                        // Mark payment as refunded
+                        $appointment->update(['payment_status' => 'refunded']);
+                    }
+
+                    \DB::commit();
+                    session()->flash('message', 'Appointment rejected and payment refunded successfully.');
+                    $this->closeModal();
+                    $this->loadAppointments();
+                } catch (\Exception $e) {
+                    \DB::rollBack();
+                    throw $e;
+                }
             }
         } catch (\Exception $e) {
-            session()->flash('error', 'Failed to reject appointment.');
+            session()->flash('error', 'Failed to reject appointment: ' . $e->getMessage());
         }
     }
 

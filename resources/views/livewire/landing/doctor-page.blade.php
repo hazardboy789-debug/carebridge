@@ -1,4 +1,5 @@
 <div>
+    @php use Illuminate\Support\Str; @endphp
     <!-- Page Title -->
     <div class="page-title">
         <div class="heading">
@@ -29,7 +30,7 @@
                             <label for="doctor-search" class="form-label mb-1">Search Doctors</label>
                             <div class="position-relative">
                                 <i class="bi bi-search search-icon"></i>
-                                <input id="doctor-search" type="text" class="form-control search-input" placeholder="Search by name, specialty, or hospital">
+                                <input id="doctor-search" type="text" wire:model.live.debounce.500ms="search" class="form-control search-input" placeholder="Search by name, specialty, or hospital">
                             </div>
                         </div>
                         <div class="col-lg-4">
@@ -52,198 +53,62 @@
                     </div>
                 </div>
 
-                <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
-                    <ul class="directory-filters isotope-filters">
-                        <li data-filter="*" class="filter-active">All Specialties</li>
-                        <li data-filter=".filter-cardiology">Cardiology</li>
-                        <li data-filter=".filter-pediatrics">Pediatrics</li>
-                        <li data-filter=".filter-dermatology">Dermatology</li>
-                        <li data-filter=".filter-gastroenterology">Gastroenterology</li>
-                        <li data-filter=".filter-neurology">Neurology</li>
-                        <li data-filter=".filter-orthopedics">Orthopedics</li>
-                    </ul><!-- End Directory Filters -->
+                <!-- Simplified filters without isotope -->
+                <div class="my-4">
+                    <ul class="directory-filters">
+                        <li class="filter-active">All Specialties</li>
+                        <li>Cardiology</li>
+                        <li>Pediatrics</li>
+                        <li>Dermatology</li>
+                        <li>Gastroenterology</li>
+                        <li>Neurology</li>
+                        <li>Orthopedics</li>
+                    </ul>
+                </div>
 
-                    <div class="row gy-4 isotope-container">
-
-                        <!-- Cardiology -->
-                        <div class="col-lg-3 col-md-6 doctor-item isotope-item filter-cardiology">
-                            <article class="doctor-card h-100">
-                                <figure class="doctor-media">
-                                    <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="img-fluid" alt="Dr. Asiri Perera" loading="lazy">
-                                    <span class="tag">Senior Consultant</span>
-                                </figure>
+                @if($debug ?? false)
+                <div class="mb-3">
+                    <div class="alert alert-info" role="alert">
+                        <strong>Debug:</strong> Search="{{ $search }}" | Total Results={{ $doctors->total() }} | Showing={{ $doctors->count() }}
+                    </div>
+                </div>
+                @endif
+                
+                <!-- Proper Bootstrap Grid Layout -->
+                <div class="row gy-4">
+                    @forelse($doctors as $doctor)
+                        <div class="col-lg-3 col-md-6">
+                            <div class="doctor-card h-100">
+                                <div class="doctor-media">
+                                    <img src="{{ $doctor->profile_photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($doctor->name) }}" class="img-fluid" alt="{{ $doctor->name }}" loading="lazy">
+                                    @if(optional($doctor->doctorDetail)->experience_years)
+                                        <span class="tag">{{ optional($doctor->doctorDetail)->experience_years }} yrs</span>
+                                    @endif
+                                </div>
                                 <div class="doctor-content">
-                                    <h3 class="doctor-name">Dr. Asiri Perera</h3>
-                                    <p class="doctor-title">Consultant Cardiologist • MBBS, MD, FRCP</p>
-                                    <p class="doctor-desc">Specializes in interventional cardiology with 15+ years experience at Colombo National Hospital.</p>
-                                    <div class="doctor-meta">
-                                        <span class="badge dept">Cardiology</span>
-                                        <span class="badge hospital">Colombo National Hospital</span>
+                                    <h3 class="doctor-name">{{ $doctor->name }}</h3>
+                                    <p class="doctor-title">{{ optional($doctor->doctorDetail)->specialization }} • {{ $doctor->email }}</p>
+                                    <p class="doctor-desc">{{ Str::limit(optional($doctor->doctorDetail)->description ?? 'No description provided', 120) }}</p>
+                                    <div class="doctor-meta mb-3">
+                                        <span class="badge dept">{{ optional($doctor->doctorDetail)->specialization ?? 'General' }}</span>
+                                        <span class="badge hospital">{{ optional($doctor->doctorDetail)->address ?? 'Private Practice' }}</span>
                                     </div>
                                     <div class="doctor-actions">
                                         <a href="#" class="btn btn-sm btn-appointment">Book Appointment</a>
                                         <a href="#" class="btn btn-sm btn-soft">View Profile</a>
                                     </div>
                                 </div>
-                            </article>
-                        </div><!-- End Directory Item -->
-
-                        <!-- Pediatrics -->
-                        <div class="col-lg-3 col-md-6 doctor-item isotope-item filter-pediatrics">
-                            <article class="doctor-card h-100">
-                                <figure class="doctor-media">
-                                    <img src="https://images.unsplash.com/photo-1594824434340-7e7dfc37cabb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="img-fluid" alt="Dr. Nirmali Silva" loading="lazy">
-                                </figure>
-                                <div class="doctor-content">
-                                    <h3 class="doctor-name">Dr. Nirmali Silva</h3>
-                                    <p class="doctor-title">Pediatric Specialist • MBBS, DCH, MD</p>
-                                    <p class="doctor-desc">Expert in childhood diseases and vaccinations with special focus on neonatal care.</p>
-                                    <div class="doctor-meta">
-                                        <span class="badge dept">Pediatrics</span>
-                                        <span class="badge hospital">Lady Ridgeway Hospital</span>
-                                    </div>
-                                    <div class="doctor-actions">
-                                        <a href="#" class="btn btn-sm btn-appointment">Book Appointment</a>
-                                        <a href="#" class="btn btn-sm btn-soft">View Profile</a>
-                                    </div>
-                                </div>
-                            </article>
-                        </div><!-- End Directory Item -->
-
-                        <!-- Dermatology -->
-                        <div class="col-lg-3 col-md-6 doctor-item isotope-item filter-dermatology">
-                            <article class="doctor-card h-100">
-                                <figure class="doctor-media">
-                                    <img src="https://images.unsplash.com/photo-1527613426441-4da17471b66d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="img-fluid" alt="Dr. Ruvini Fernando" loading="lazy">
-                                    <span class="tag alt">Skin Cancer Specialist</span>
-                                </figure>
-                                <div class="doctor-content">
-                                    <h3 class="doctor-name">Dr. Ruvini Fernando</h3>
-                                    <p class="doctor-title">Consultant Dermatologist • MBBS, MD, DVD</p>
-                                    <p class="doctor-desc">Expert in tropical skin diseases, cosmetic dermatology, and laser treatments.</p>
-                                    <div class="doctor-meta">
-                                        <span class="badge dept">Dermatology</span>
-                                        <span class="badge hospital">Nawaloka Hospital</span>
-                                    </div>
-                                    <div class="doctor-actions">
-                                        <a href="#" class="btn btn-sm btn-appointment">Book Appointment</a>
-                                        <a href="#" class="btn btn-sm btn-soft">View Profile</a>
-                                    </div>
-                                </div>
-                            </article>
-                        </div><!-- End Directory Item -->
-
-                        <!-- Orthopedics -->
-                        <div class="col-lg-3 col-md-6 doctor-item isotope-item filter-orthopedics">
-                            <article class="doctor-card h-100">
-                                <figure class="doctor-media">
-                                    <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="img-fluid" alt="Dr. Shanaka Rathnayake" loading="lazy">
-                                </figure>
-                                <div class="doctor-content">
-                                    <h3 class="doctor-name">Dr. Shanaka Rathnayake</h3>
-                                    <p class="doctor-title">Orthopedic Surgeon • MBBS, MS, FRCS</p>
-                                    <p class="doctor-desc">Specializes in joint replacements and sports injuries with 12 years of surgical experience.</p>
-                                    <div class="doctor-meta">
-                                        <span class="badge dept">Orthopedics</span>
-                                        <span class="badge hospital">Asiri Surgical Hospital</span>
-                                    </div>
-                                    <div class="doctor-actions">
-                                        <a href="#" class="btn btn-sm btn-appointment">Book Appointment</a>
-                                        <a href="#" class="btn btn-sm btn-soft">View Profile</a>
-                                    </div>
-                                </div>
-                            </article>
-                        </div><!-- End Directory Item -->
-
-                        <!-- Gastroenterology -->
-                        <div class="col-lg-3 col-md-6 doctor-item isotope-item filter-gastroenterology">
-                            <article class="doctor-card h-100">
-                                <figure class="doctor-media">
-                                    <img src="https://images.unsplash.com/photo-1537368910025-700350fe46c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="img-fluid" alt="Dr. Chathura Gunawardena" loading="lazy">
-                                </figure>
-                                <div class="doctor-content">
-                                    <h3 class="doctor-name">Dr. Chathura Gunawardena</h3>
-                                    <p class="doctor-title">Gastroenterologist • MBBS, MD, DM</p>
-                                    <p class="doctor-desc">Expert in endoscopic procedures and liver diseases. Special interest in hepatology.</p>
-                                    <div class="doctor-meta">
-                                        <span class="badge dept">Gastroenterology</span>
-                                        <span class="badge hospital">Lanka Hospitals</span>
-                                    </div>
-                                    <div class="doctor-actions">
-                                        <a href="#" class="btn btn-sm btn-appointment">Book Appointment</a>
-                                        <a href="#" class="btn btn-sm btn-soft">View Profile</a>
-                                    </div>
-                                </div>
-                            </article>
-                        </div><!-- End Directory Item -->
-
-                        <!-- Neurology -->
-                        <div class="col-lg-3 col-md-6 doctor-item isotope-item filter-neurology">
-                            <article class="doctor-card h-100">
-                                <figure class="doctor-media">
-                                    <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="img-fluid" alt="Dr. Dilshan Rajapakse" loading="lazy">
-                                </figure>
-                                <div class="doctor-content">
-                                    <h3 class="doctor-name">Dr. Dilshan Rajapakse</h3>
-                                    <p class="doctor-title">Neurologist • MBBS, MD, DM</p>
-                                    <p class="doctor-desc">Specializes in stroke management, epilepsy, and movement disorders.</p>
-                                    <div class="doctor-meta">
-                                        <span class="badge dept">Neurology</span>
-                                        <span class="badge hospital">Neurology Institute Sri Lanka</span>
-                                    </div>
-                                    <div class="doctor-actions">
-                                        <a href="#" class="btn btn-sm btn-appointment">Book Appointment</a>
-                                        <a href="#" class="btn btn-sm btn-soft">View Profile</a>
-                                    </div>
-                                </div>
-                            </article>
-                        </div><!-- End Directory Item -->
-
-                        <!-- Psychiatry -->
-                        <div class="col-lg-3 col-md-6 doctor-item isotope-item filter-psychiatry">
-                            <article class="doctor-card h-100">
-                                <figure class="doctor-media">
-                                    <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="img-fluid" alt="Dr. Anoma Jayasinghe" loading="lazy">
-                                </figure>
-                                <div class="doctor-content">
-                                    <h3 class="doctor-name">Dr. Anoma Jayasinghe</h3>
-                                    <p class="doctor-title">Consultant Psychiatrist • MBBS, MD</p>
-                                    <p class="doctor-desc">Specializes in anxiety, depression, and stress-related disorders with cognitive therapy.</p>
-                                    <div class="doctor-meta">
-                                        <span class="badge dept">Psychiatry</span>
-                                        <span class="badge hospital">National Institute of Mental Health</span>
-                                    </div>
-                                    <div class="doctor-actions">
-                                        <a href="#" class="btn btn-sm btn-appointment">Book Appointment</a>
-                                        <a href="#" class="btn btn-sm btn-soft">View Profile</a>
-                                    </div>
-                                </div>
-                            </article>
-                        </div><!-- End Directory Item -->
-
-                        <!-- Oncology -->
-                        <div class="col-lg-3 col-md-6 doctor-item isotope-item filter-oncology">
-                            <article class="doctor-card h-100">
-                                <figure class="doctor-media">
-                                    <img src="https://images.unsplash.com/photo-1537368910025-700350fe46c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" class="img-fluid" alt="Dr. Sanjaya Bandara" loading="lazy">
-                                </figure>
-                                <div class="doctor-content">
-                                    <h3 class="doctor-name">Dr. Sanjaya Bandara</h3>
-                                    <p class="doctor-title">Oncologist • MBBS, MD, DM</p>
-                                    <p class="doctor-desc">Specializes in medical oncology with expertise in chemotherapy and targeted therapies.</p>
-                                    <div class="doctor-meta">
-                                        <span class="badge dept">Oncology</span>
-                                        <span class="badge hospital">Apeksha Hospital Maharagama</span>
-                                    </div>
-                                    <div class="doctor-actions">
-                                        <a href="#" class="btn btn-sm btn-appointment">Book Appointment</a>
-                                        <a href="#" class="btn btn-sm btn-soft">View Profile</a>
-                                    </div>
-                                </div>
-                            </article>
-                        </div><!-- End Directory Item -->
-
-                    </div><!-- End Directory Items Container -->
+                            </div>
+                        </div>
+                    @empty
+                        <div class="col-12 text-center py-6">
+                            <p class="text-muted">No doctors found for "{{ $search }}"</p>
+                        </div>
+                    @endforelse
+                </div>
+                
+                <div class="mt-4">
+                    {{ $doctors->links() }}
                 </div>
             </div><!-- End Filterable Doctor Directory -->
 
@@ -570,18 +435,26 @@
         overflow: hidden;
         box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         height: 100%;
+        display: flex;
+        flex-direction: column;
     }
     
     .doctor-media {
         position: relative;
         overflow: hidden;
         height: 250px;
+        flex-shrink: 0;
     }
     
     .doctor-media img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .doctor-card:hover .doctor-media img {
+        transform: scale(1.05);
     }
     
     .tag {
@@ -594,14 +467,14 @@
         border-radius: 20px;
         font-size: 0.8rem;
         font-weight: 600;
-    }
-    
-    .tag.alt {
-        background: var(--success-color);
+        z-index: 1;
     }
     
     .doctor-content {
         padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
     }
     
     .doctor-name {
@@ -622,6 +495,7 @@
         color: #64748b;
         margin-bottom: 15px;
         line-height: 1.5;
+        flex-grow: 1;
     }
     
     .badge.dept {
@@ -644,7 +518,7 @@
     }
     
     .doctor-actions {
-        margin-top: 15px;
+        margin-top: auto;
         display: flex;
         gap: 10px;
     }
@@ -743,11 +617,13 @@
         border-radius: 10px;
         padding: 20px;
         height: 100%;
+        transition: all 0.3s ease;
     }
     
     .minimal-card:hover {
         background: white;
         box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        transform: translateY(-5px);
     }
     
     .avatar {
@@ -803,10 +679,12 @@
         border-radius: 8px;
         padding: 15px;
         text-align: center;
+        transition: all 0.3s ease;
     }
     
     .schedule-grid .slot:hover {
         background: rgba(52, 183, 241, 0.1);
+        transform: translateY(-3px);
     }
     
     .schedule-grid .slot strong {
@@ -836,16 +714,14 @@
         cursor: pointer;
         font-weight: 600;
         color: #64748b;
+        transition: all 0.3s ease;
     }
     
     .directory-filters li.filter-active,
     .directory-filters li:hover {
         background: linear-gradient(to right, var(--primary-color), var(--accent-color));
         color: white;
-    }
-    
-    .isotope-item {
-        display: none;
+        transform: translateY(-2px);
     }
     
     @media (max-width: 768px) {
@@ -867,6 +743,10 @@
         
         .profile-media img {
             height: 300px;
+        }
+        
+        .name {
+            font-size: 1.5rem;
         }
     }
 </style>

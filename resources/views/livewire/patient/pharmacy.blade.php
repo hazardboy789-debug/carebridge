@@ -309,10 +309,19 @@
                             View Medicines
                         </button>
                         @php
-                            // Override coordinates for 'Rajya Osu Sala' pharmacy
+                            // Override coordinates for specific pharmacies (fixes manual redirects)
                             $pharmacyName = strtolower(trim($pharmacy->name));
-                            $dirLat = ($pharmacyName === 'rajya osu sala' || $pharmacyName === 'raja osu sala') ? 6.9280 : ($pharmacy->latitude ?? 0);
-                            $dirLng = ($pharmacyName === 'rajya osu sala' || $pharmacyName === 'raja osu sala') ? 79.8630 : ($pharmacy->longitude ?? 0);
+                            if ($pharmacyName === 'rajya osu sala' || $pharmacyName === 'raja osu sala') {
+                                $dirLat = 6.9280;
+                                $dirLng = 79.8630;
+                            } elseif (strpos($pharmacyName, 'union') !== false || strpos($pharmacyName, 'chemist') !== false) {
+                                // Union/Chemist name variants - explicit coordinates
+                                $dirLat = 6.9150; // latitude override for Union Chemist
+                                $dirLng = 79.8650; // longitude override for Union Chemist
+                            } else {
+                                $dirLat = $pharmacy->latitude ?? 0;
+                                $dirLng = $pharmacy->longitude ?? 0;
+                            }
                         @endphp
                         <a href="https://www.openstreetmap.org/directions?from=&to={{ $dirLat }},{{ $dirLng }}" 
                            target="_blank"
@@ -589,8 +598,21 @@ document.addEventListener('livewire:init', () => {
         @endphp
         
         @foreach($pharmaciesData as $pharmacy)
-            @if($pharmacy->latitude && $pharmacy->longitude)
-                const marker{{ $pharmacy->id }} = L.marker([{{ $pharmacy->latitude }}, {{ $pharmacy->longitude }}], { 
+            @php
+                $pName = strtolower(trim($pharmacy->name));
+                if ($pName === 'rajya osu sala' || $pName === 'raja osu sala') {
+                    $markerLat = 6.9280;
+                    $markerLng = 79.8630;
+                } elseif (strpos($pName, 'union') !== false || strpos($pName, 'chemist') !== false) {
+                    $markerLat = 6.9150; // Union Chemist lat override
+                    $markerLng = 79.8650; // Union Chemist lng override
+                } else {
+                    $markerLat = $pharmacy->latitude;
+                    $markerLng = $pharmacy->longitude;
+                }
+            @endphp
+            @if($markerLat && $markerLng)
+                const marker{{ $pharmacy->id }} = L.marker([{{ $markerLat }}, {{ $markerLng }}], { 
                     icon: L.divIcon({
                         html: `
                             <div class="relative">
@@ -627,7 +649,7 @@ document.addEventListener('livewire:init', () => {
                                     class="px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition w-full">
                                 View Medicines
                             </button>
-                            <a href="https://www.openstreetmap.org/directions?from=&to={{ $pharmacy->latitude }},{{ $pharmacy->longitude }}" 
+                            <a href="https://www.openstreetmap.org/directions?from=&to={{ $markerLat }},{{ $markerLng }}" 
                                target="_blank"
                                class="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition text-center block">
                                 Get Directions

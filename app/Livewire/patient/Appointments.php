@@ -184,7 +184,7 @@ class Appointments extends Component
                 'payment_status' => $fee > 0 ? 'pending' : 'paid',
             ]);
 
-            // If there's a fee, move funds from patient wallet to doctor wallet and platform commission
+            // If there's a fee, deduct from patient wallet but hold payment until appointment is approved
             if ($fee > 0) {
                 $patient = auth()->user();
                 $patientWallet = $patient->getOrCreateWallet();
@@ -194,12 +194,7 @@ class Appointments extends Component
                     throw new \Exception('Insufficient wallet balance to pay the doctor fee.');
                 }
 
-                // compute commission and net amounts (ensure commissionPercent fallback)
-                $commissionPercent = $this->commissionPercent ?? floatval(config('payments.platform_commission', 0.10));
-                $commission = round($fee * $commissionPercent, 2);
-                $netToDoctor = round($fee - $commission, 2);
-
-                // Debit patient (full fee)
+                // Debit patient (full fee) - money is held until approval
                 $patientWallet->balance = $patientWallet->balance - $fee;
                 $patientWallet->save();
 
@@ -207,47 +202,13 @@ class Appointments extends Component
                     'wallet_id' => $patientWallet->id,
                     'type' => 'debit',
                     'amount' => $fee,
-                    'description' => 'Appointment booking - Dr. ' . ($doctor->name ?? ''),
-                    'status' => 'completed',
+                    'description' => 'Appointment booking (held) - Dr. ' . ($doctor->name ?? ''),
+                    'status' => 'pending', // Mark as pending until appointment approved
                     'appointment_id' => $appointment->id,
                 ]);
 
-                // Credit doctor with net amount
-                $doctorWallet = $doctor->getOrCreateWallet();
-                $doctorWallet->balance = $doctorWallet->balance + $netToDoctor;
-                $doctorWallet->save();
-
-                WalletTransaction::create([
-                    'wallet_id' => $doctorWallet->id,
-                    'type' => 'credit',
-                    'amount' => $netToDoctor,
-                    'description' => 'Appointment payout (net) - Patient #' . auth()->id(),
-                    'status' => 'completed',
-                    'appointment_id' => $appointment->id,
-                ]);
-
-                // Credit platform commission to the first admin user's wallet if present
-                $platformOwner = User::where('role', 'admin')->first();
-                if ($platformOwner) {
-                    $platformWallet = $platformOwner->getOrCreateWallet();
-                    $platformWallet->balance = $platformWallet->balance + $commission;
-                    $platformWallet->save();
-
-                    WalletTransaction::create([
-                        'wallet_id' => $platformWallet->id,
-                        'type' => 'credit',
-                        'amount' => $commission,
-                        'description' => 'Platform commission - Appointment #' . $appointment->id,
-                        'status' => 'completed',
-                        'appointment_id' => $appointment->id,
-                    ]);
-                }
-                // Mark appointment payment as completed
-                try {
-                    $appointment->update(['payment_status' => 'paid']);
-                } catch (\Exception $e) {
-                    // swallow - not critical, will be caught by outer transaction if it fails
-                }
+                // Payment will be transferred to doctor upon appointment approval
+                // Keep payment_status as 'pending' until then
             }
 
             DB::commit();

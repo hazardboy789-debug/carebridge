@@ -121,6 +121,14 @@
                                 class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">
                                 Pharmacy</p>
                         </a>
+                        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 group"
+                            href="{{ route('patient.emergency') }}">
+                            <span
+                                class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">emergency</span>
+                            <p
+                                class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">
+                                Emergency Assistance</p>
+                        </a>
                     </div>
                 </div>
                 <div class="flex flex-col gap-1">

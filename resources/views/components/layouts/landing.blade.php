@@ -30,6 +30,8 @@
     <!-- Main CSS File -->
     <link href="/assets/css/main.css" rel="stylesheet">
 
+    @livewireStyles
+
     <!-- Custom Registration Modal Styles -->
     <style>
         .register-modal-content {
@@ -597,6 +599,8 @@
             });
         });
     </script>
+
+    @livewireScripts
 
 </body>
 

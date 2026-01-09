@@ -25,6 +25,7 @@ use App\Livewire\Patient\Appointments as PatientAppointments;
 use App\Livewire\Patient\Chat;
 use App\Livewire\Patient\PatientWallet;
 use App\Livewire\Patient\PatientPharmacy;
+use App\Livewire\Patient\EmergencyAssistance;
 
 // Doctor
 use App\Livewire\Doctor\Dashboard;
@@ -189,6 +190,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/chat', Chat::class)->name('chat');
         Route::get('/wallet', PatientWallet::class)->name('wallet');
         Route::get('/pharmacy', PatientPharmacy::class)->name('pharmacy');
+        Route::get('/emergency', EmergencyAssistance::class)->name('emergency');
     });
 
     /*

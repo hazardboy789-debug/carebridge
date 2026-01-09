@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use App\Models\DoctorDetail;
 
 class UserSeeder extends Seeder
 {
@@ -13,14 +14,16 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Staff User
-        User::create([
-            'name' => 'Staff',
-            'email' => 'staff@gmail.com',
-            'password' => Hash::make('staff@1213'),
-            'role' => 'staff',
-            'contact' => '0776657107',
-        ]);
+        // Create or update Staff User
+        User::updateOrCreate(
+            ['email' => 'staff@gmail.com'],
+            [
+                'name' => 'Staff',
+                'password' => Hash::make('staff@1213'),
+                'role' => 'staff',
+                'contact' => '0776657107',
+            ]
+        );
 
         // Create Admin User
         User::create([
