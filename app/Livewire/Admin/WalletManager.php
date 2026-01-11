@@ -9,6 +9,8 @@ use App\Models\User;
 use Carbon\Carbon;
 use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 #[Layout('components.layouts.admin')]
 
@@ -117,5 +119,50 @@ class WalletManager extends Component
             'recentTransactions' => $this->recentTransactions,
             'walletActivity' => $this->walletActivity,
         ]);
+    }
+
+    /**
+     * Add funds to a wallet. Only allowed for patient wallets.
+     * Called from the Blade via Livewire.
+     */
+    public function addFunds($walletId, $amount, $note = null)
+    {
+        $amount = floatval($amount);
+
+        if ($amount <= 0) {
+            $this->dispatch('show-toast', type: 'error', message: 'Enter a valid amount');
+            return;
+        }
+
+        $wallet = Wallet::with('user')->find($walletId);
+
+        if (! $wallet) {
+            $this->dispatch('show-toast', type: 'error', message: 'Wallet not found');
+            return;
+        }
+
+        if (! $wallet->user || strtolower($wallet->user->role) !== 'patient') {
+            $this->dispatch('show-toast', type: 'error', message: 'Can only add funds to patient wallets');
+            return;
+        }
+
+        DB::transaction(function () use ($wallet, $amount, $note) {
+            $wallet->balance = $wallet->balance + $amount;
+            $wallet->save();
+
+            WalletTransaction::create([
+                'wallet_id' => $wallet->id,
+                'type' => 'credit',
+                'amount' => $amount,
+                'description' => $note ?? 'Admin added funds',
+                'status' => 'completed',
+                'reference_id' => null,
+                'metadata' => ['added_by' => Auth::id()],
+            ]);
+        });
+
+        // Refresh stats and send a success notification
+        $this->loadStats();
+        $this->dispatch('show-toast', type: 'success', message: 'Funds added successfully');
     }
 }

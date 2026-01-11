@@ -6,6 +6,10 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\User;
 use App\Models\UserDetail;
+use App\Models\Wallet;
+use App\Models\WalletTransaction;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -282,5 +286,46 @@ class Patients extends Component
         $this->address = null;
         $this->gender = null;
         $this->patient_status = 1;
+    }
+
+    /**
+     * Add funds to a patient's wallet. Called from the patients Blade via Livewire.
+     */
+    public function addFunds($userId, $amount, $note = null)
+    {
+        $amount = floatval($amount);
+
+        if ($amount <= 0) {
+            $this->dispatch('show-toast', type: 'error', message: 'Enter a valid amount');
+            return;
+        }
+
+        $user = User::find($userId);
+        if (! $user || strtolower($user->role) !== 'patient') {
+            $this->dispatch('show-toast', type: 'error', message: 'Invalid patient');
+            return;
+        }
+
+        DB::transaction(function () use ($user, $amount, $note) {
+            $wallet = Wallet::firstOrCreate(
+                ['user_id' => $user->id],
+                ['balance' => 0, 'status' => 'active']
+            );
+
+            $wallet->balance = $wallet->balance + $amount;
+            $wallet->save();
+
+            WalletTransaction::create([
+                'wallet_id' => $wallet->id,
+                'type' => 'credit',
+                'amount' => $amount,
+                'description' => $note ?? 'Admin added funds',
+                'status' => 'completed',
+                'reference_id' => null,
+                'metadata' => ['added_by' => Auth::id()],
+            ]);
+        });
+
+        $this->dispatch('show-toast', type: 'success', message: 'Funds added successfully');
     }
 }

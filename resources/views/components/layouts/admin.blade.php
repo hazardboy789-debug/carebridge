@@ -90,6 +90,10 @@
                             <span class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">swap_horiz</span>
                             <p class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">Wallet Transactions</p>
                         </a>
+                        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 group" href="{{ route('admin.reports') }}">
+                            <span class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">analytics</span>
+                            <p class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">Reports & Analytics</p>
+                        </a>
                         
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 group" href="{{ route('admin.pharmacy') }}">
                             <span class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">local_pharmacy</span>
@@ -114,9 +118,7 @@
             <!-- TopNavBar -->
             <header class="sticky top-0 flex items-center justify-end whitespace-nowrap bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 px-8 py-4">
                 <div class="flex items-center gap-4">
-                    <button class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary">
-                        <span class="material-symbols-outlined text-2xl">notifications</span>
-                    </button>
+                    @livewire('admin.notifications-bell')
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary" aria-label="Logout">

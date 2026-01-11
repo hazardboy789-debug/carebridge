@@ -19,6 +19,11 @@
         @livewireStyles
     </head>
     <body class="font-sans antialiased">
+        <script>
+            window.Laravel = {
+                userId: {{ auth()->id() ?? 'null' }}
+            };
+        </script>
         <x-banner />
 
         <div class="min-h-screen bg-gray-100">

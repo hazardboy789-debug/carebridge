@@ -15,8 +15,10 @@ use App\Livewire\Admin\Doctors as AdminDoctor;
 use App\Livewire\Admin\Patients as AdminPatient;
 use App\Livewire\Admin\PharmacyAdmin;
 use App\Livewire\Admin\Appointments as AdminAppointments;
+use App\Livewire\Admin\NotificationsList;
 use App\Livewire\Admin\WalletManager;
 use App\Livewire\Admin\WalletTransactions;
+use App\Livewire\Admin\Reports;
 
 // Patient
 use App\Livewire\Patient\PatientDashboard;
@@ -172,10 +174,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/doctors', AdminDoctor::class)->name('doctors');
         Route::get('/pharmacy', PharmacyAdmin::class)->name('pharmacy');
         Route::get('/appointments', AdminAppointments::class)->name('appointments');
+        Route::get('/notifications', NotificationsList::class)->name('notifications');
         
         // Wallet Management Routes
         Route::get('/wallet-management', WalletManager::class)->name('wallet.management');
         Route::get('/wallet-transactions', WalletTransactions::class)->name('wallet.transactions');
+        Route::get('/reports', Reports::class)->name('reports');
     });
 
     /*

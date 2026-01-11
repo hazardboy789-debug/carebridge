@@ -1,4 +1,4 @@
-<div>
+<div x-data="{ showAddFunds:false, selectedPatientId:null, selectedPatientName:'', amount:'', note:'' }">
     <div class="flex-1 p-8">
     <div class="flex flex-col gap-8">
         <!-- Page Heading -->
@@ -198,6 +198,15 @@
                                             <button wire:click="openEditModal({{ $patient->id }})" class="flex items-center justify-center rounded-full size-8 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary" title="Edit">
                                                 <span class="material-symbols-outlined text-lg">edit</span>
                                             </button>
+                                            <button
+                                                class="flex items-center justify-center rounded-full size-8 hover:bg-green-100 text-green-600"
+                                                title="Add Funds"
+                                                data-patient-id="{{ $patient->id }}"
+                                                data-patient-name="{{ e($patient->name) }}"
+                                                x-on:click="selectedPatientId = $el.dataset.patientId; selectedPatientName = $el.dataset.patientName; showAddFunds = true"
+                                            >
+                                                <span class="material-symbols-outlined text-lg">payments</span>
+                                            </button>
                                             <button onclick="confirm('Are you sure you want to delete this patient?') || event.stopImmediatePropagation()" wire:click="deletePatient({{ $patient->id }})" class="flex items-center justify-center rounded-full size-8 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500" title="Delete">
                                                 <span class="material-symbols-outlined text-lg">delete</span>
                                             </button>
@@ -231,6 +240,36 @@
                 </div>
             </div>
         </div>
+
+    <!-- Add Funds Modal (Alpine) -->
+    <div x-show="showAddFunds" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white rounded-lg w-full max-w-md p-6" x-on:click.away="showAddFunds = false">
+            <h3 class="font-semibold mb-2">Add Funds to <span class="text-gray-700" x-text="selectedPatientName"></span></h3>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs text-gray-600">Amount (LKR)</label>
+                    <input type="number" min="0" step="0.01" x-model="amount" class="w-full mt-1 border rounded px-3 py-2 text-sm" placeholder="Enter amount" />
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-600">Note (optional)</label>
+                    <input type="text" x-model="note" class="w-full mt-1 border rounded px-3 py-2 text-sm" placeholder="Reason or note" />
+                </div>
+
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" class="px-3 py-1 rounded bg-gray-100 text-sm" x-on:click="showAddFunds = false">Cancel</button>
+                    <button
+                        type="button"
+                        class="px-3 py-1 rounded bg-green-600 text-white text-sm"
+                        x-on:click.prevent="if(!amount || amount <= 0) { alert('Enter a valid amount'); return; } $wire.call('addFunds', selectedPatientId, amount, note).then(()=>{ showAddFunds = false; amount = ''; note = ''; })"
+                    >
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 </div>
 </div>

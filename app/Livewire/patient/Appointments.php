@@ -8,6 +8,10 @@ use App\Models\User;
 use App\Models\DoctorDetail;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\AppointmentReminder;
+use App\Notifications\SystemAnnouncement;
+use App\Notifications\PatientAppointmentConfirmation;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -212,6 +216,31 @@ class Appointments extends Component
             }
 
             DB::commit();
+
+            // Send notifications: notify the doctor and admins
+            try {
+
+                // Notify doctor (email + database)
+                if ($doctor) {
+                    Notification::sendNow($doctor, new AppointmentReminder($appointment));
+                }
+
+                // Notify patient (email + database)
+                $patient = $appointment->patient;
+                if ($patient) {
+                    Notification::sendNow($patient, new PatientAppointmentConfirmation($appointment));
+                }
+
+                // Notify admins (if your app uses a `role` column)
+                $admins = User::where('role', 'admin')->get();
+                if ($admins->isNotEmpty()) {
+                    $adminMessage = "New appointment booked by {$appointment->patient->name} for " . ($appointment->scheduled_at ?? $appointment->appointment_date);
+                    Notification::sendNow($admins, new SystemAnnouncement('New Appointment', $adminMessage, url('/admin/notifications')));
+                }
+            } catch (\Exception $e) {
+                // don't fail booking if notifications fail; log optionally
+                logger()->error('Failed to send appointment notifications: ' . $e->getMessage());
+            }
 
             session()->flash('booking_success', 'Appointment booked successfully! Waiting for doctor confirmation.');
             $this->closeBooking();
