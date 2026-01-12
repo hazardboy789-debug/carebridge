@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html class="light" lang="en">
+<html lang="en">
 
 <head>
     <meta charset="utf-8" />
@@ -10,6 +10,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <script>
+        // Apply initial theme from localStorage or OS preference
+        (function() {
+            try {
+                const stored = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const useDark = stored === 'dark' || (!stored && prefersDark);
+                if (useDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (e) {
+                // ignore
+            }
+        })();
+
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -45,6 +61,7 @@
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
     </style>
+    @livewireStyles
 </head>
 
 <body class="font-display bg-background-light dark:bg-background-dark">
@@ -119,6 +136,10 @@
             <header class="sticky top-0 flex items-center justify-end whitespace-nowrap bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 px-8 py-4">
                 <div class="flex items-center gap-4">
                     @livewire('admin.notifications-bell')
+                    <!-- Dark mode toggle -->
+                    <button id="theme-toggle" class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary" aria-label="Toggle dark mode" type="button">
+                        <span id="theme-toggle-icon" class="material-symbols-outlined text-2xl">dark_mode</span>
+                    </button>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary" aria-label="Logout">
@@ -136,6 +157,30 @@
             </div>
         </main>
     </div>
+
+    <script>
+        // Toggle theme and persist to localStorage
+        (function(){
+            const toggle = document.getElementById('theme-toggle');
+            const icon = document.getElementById('theme-toggle-icon');
+            if (!toggle) return;
+
+            function setIcon() {
+                const isDark = document.documentElement.classList.contains('dark');
+                icon.textContent = isDark ? 'dark_mode' : 'light_mode';
+            }
+
+            toggle.addEventListener('click', () => {
+                const isDark = document.documentElement.classList.toggle('dark');
+                try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(e) {}
+                setIcon();
+            });
+
+            // Ensure icon reflects current state
+            setIcon();
+        })();
+    </script>
+        @livewireScripts
 </body>
 
 </html>

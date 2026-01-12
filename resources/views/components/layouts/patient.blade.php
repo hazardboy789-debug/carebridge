@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html class="light" lang="en">
+<html lang="en">
 
 <head>
     <meta charset="utf-8" />
@@ -10,6 +10,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <script>
+        // Apply initial theme from localStorage or OS preference
+        (function() {
+            try {
+                const stored = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const useDark = stored === 'dark' || (!stored && prefersDark);
+                if (useDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (e) {
+                // ignore
+            }
+        })();
+
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -153,6 +169,9 @@
             <header
                 class="sticky top-0 flex items-center justify-end whitespace-nowrap bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 px-8 py-4">
                 <div class="flex items-center gap-4">
+                    <button id="theme-toggle" class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary" aria-label="Toggle dark mode" type="button">
+                        <span id="theme-toggle-icon" class="material-symbols-outlined text-2xl">dark_mode</span>
+                    </button>
                     <button
                         class="flex items-center justify-center rounded-full size-10 hover:bg-primary/10 dark:hover:bg-primary/20 text-text-light-secondary dark:text-text-dark-secondary">
                         <span class="material-symbols-outlined text-2xl">notifications</span>
@@ -179,5 +198,27 @@
         </main>
     </div>
 </body>
+
+    <script>
+        // Theme toggle for patient layout
+        (function(){
+            const toggle = document.getElementById('theme-toggle');
+            const icon = document.getElementById('theme-toggle-icon');
+            if (!toggle) return;
+
+            function setIcon() {
+                const isDark = document.documentElement.classList.contains('dark');
+                icon.textContent = isDark ? 'dark_mode' : 'light_mode';
+            }
+
+            toggle.addEventListener('click', () => {
+                const isDark = document.documentElement.classList.toggle('dark');
+                try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(e) {}
+                setIcon();
+            });
+
+            setIcon();
+        })();
+    </script>
 
 </html>
