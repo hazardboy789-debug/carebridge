@@ -6,6 +6,8 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Appointment;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\Layout;
 
 #[Layout('components.layouts.admin')]
@@ -15,120 +17,294 @@ class Appointments extends Component
 
     public $search = '';
     public $dateRange = 'All';
-    public $status = 'All Status';
-    public $doctor = null;
-    public $type = 'All Types';
+    public $status = '';
+    public $doctor = '';
+    public $type = '';
 
     public $doctors = [];
     public $startDate = null;
     public $endDate = null;
 
-    public function updatingSearch()
+    public function mount()
     {
+        // Set default date for today if needed
+        if ($this->dateRange === 'Custom Range') {
+            $this->startDate = now()->startOfMonth()->format('Y-m-d');
+            $this->endDate = now()->endOfMonth()->format('Y-m-d');
+        }
+    }
+
+    public function updatedDateRange($value)
+    {
+        if ($value === 'Custom Range') {
+            if (!$this->startDate) {
+                $this->startDate = now()->startOfMonth()->format('Y-m-d');
+            }
+            if (!$this->endDate) {
+                $this->endDate = now()->endOfMonth()->format('Y-m-d');
+            }
+        } else {
+            $this->startDate = null;
+            $this->endDate = null;
+        }
+
         $this->resetPage();
     }
 
-    public function updatingDateRange()
+    public function updating($property, $value)
     {
-        $this->resetPage();
+        if (in_array($property, ['search', 'dateRange', 'status', 'doctor', 'type', 'startDate', 'endDate'])) {
+            $this->resetPage();
+        }
     }
 
-    public function updatingStatus()
+    public function applyFilters($query)
     {
-        $this->resetPage();
+        return $query
+            // Search filter (also try parsing date strings to match scheduled_at)
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->whereHas('patient', function ($q2) {
+                        $q2->where('name', 'like', '%' . $this->search . '%')
+                           ->orWhere('email', 'like', '%' . $this->search . '%');
+                    })
+                    ->orWhereHas('doctor', function ($q2) {
+                        $q2->where('name', 'like', '%' . $this->search . '%')
+                           ->orWhere('email', 'like', '%' . $this->search . '%');
+                    })
+                    ->orWhere('notes', 'like', '%' . $this->search . '%');
+
+                    try {
+                        $parsed = Carbon::parse($this->search)->toDateString();
+                        $q->orWhereDate('scheduled_at', $parsed);
+                    } catch (\Exception $e) {
+                        // not a date string; ignore
+                    }
+                });
+            })
+            // Status filter - FIXED: Check for empty or "All Status"
+            ->when(!empty($this->status) && $this->status !== 'All Status', function($query) {
+                return $query->where('status', $this->status);
+            })
+            // Doctor filter - FIXED: Check for empty string
+            ->when(!empty($this->doctor), function($query) {
+                return $query->where('doctor_id', $this->doctor);
+            })
+            // Type filter - handle 'virtual' explicitly; treat in-person as not-virtual or null
+            ->when(!empty($this->type) && $this->type !== 'All Types', function($query) {
+                $typeVal = strtolower($this->type);
+                if (Schema::hasColumn('appointments', 'type')) {
+                    return $query->where('type', $typeVal === 'in-person' ? 'in_person' : $typeVal);
+                } elseif (Schema::hasColumn('appointments', 'appointment_time')) {
+                    if ($typeVal === 'virtual') {
+                        return $query->where('appointment_time', 'virtual');
+                    }
+                    // in-person: appointment_time may be null or not 'virtual'
+                    return $query->where(function($q) {
+                        $q->whereNull('appointment_time')->orWhere('appointment_time', '!=', 'virtual');
+                    });
+                }
+                return $query;
+            })
+            // Date range filter
+            ->when($this->dateRange, function($query) {
+                $today = Carbon::today();
+                
+                switch ($this->dateRange) {
+                    case 'Today':
+                        return $query->whereDate('scheduled_at', $today);
+                        
+                    case 'This Week':
+                        return $query->whereBetween('scheduled_at', [
+                            $today->copy()->startOfWeek(),
+                            $today->copy()->endOfWeek()
+                        ]);
+                        
+                    case 'This Month':
+                        return $query->whereBetween('scheduled_at', [
+                            $today->copy()->startOfMonth(),
+                            $today->copy()->endOfMonth()
+                        ]);
+                        
+                    case 'Custom Range':
+                        // Support both-bounds and single-bound ranges
+                        if ($this->startDate && $this->endDate) {
+                            return $query->whereBetween('scheduled_at', [
+                                Carbon::parse($this->startDate)->startOfDay(),
+                                Carbon::parse($this->endDate)->endOfDay()
+                            ]);
+                        }
+
+                        if ($this->startDate && ! $this->endDate) {
+                            return $query->where('scheduled_at', '>=', Carbon::parse($this->startDate)->startOfDay());
+                        }
+
+                        if (! $this->startDate && $this->endDate) {
+                            return $query->where('scheduled_at', '<=', Carbon::parse($this->endDate)->endOfDay());
+                        }
+
+                        return $query;
+                        
+                    case 'All':
+                    default:
+                        return $query;
+                }
+            });
     }
 
-    public function updatingDoctor()
+    public function calculateTodayStats()
     {
-        $this->resetPage();
+        $today = Carbon::today();
+        
+        $todayQuery = Appointment::whereDate('scheduled_at', $today);
+        
+        // Apply same filters to stats (except date filter)
+        if ($this->search) {
+            $todayQuery->where(function ($q) {
+                $q->whereHas('patient', function ($q2) {
+                    $q2->where('name', 'like', '%' . $this->search . '%')
+                       ->orWhere('email', 'like', '%' . $this->search . '%');
+                })
+                ->orWhereHas('doctor', function ($q2) {
+                    $q2->where('name', 'like', '%' . $this->search . '%')
+                       ->orWhere('email', 'like', '%' . $this->search . '%');
+                });
+            });
+        }
+        
+        // FIXED: Check for "All Status"
+        if ($this->status && $this->status !== 'All Status') {
+            $todayQuery->where('status', $this->status);
+        }
+        
+        // FIXED: Check for empty string
+        if (!empty($this->doctor)) {
+            $todayQuery->where('doctor_id', $this->doctor);
+        }
+        
+        // Check for "All Types" and map virtual vs in-person properly
+        if ($this->type && $this->type !== 'All Types') {
+            $typeVal = strtolower($this->type);
+            if (Schema::hasColumn('appointments', 'type')) {
+                $todayQuery->where('type', $typeVal === 'in-person' ? 'in_person' : $typeVal);
+            } elseif (Schema::hasColumn('appointments', 'appointment_time')) {
+                if ($typeVal === 'virtual') {
+                    $todayQuery->where('appointment_time', 'virtual');
+                } else {
+                    $todayQuery->where(function($q) {
+                        $q->whereNull('appointment_time')->orWhere('appointment_time', '!=', 'virtual');
+                    });
+                }
+            }
+        }
+
+        $total = $todayQuery->count();
+        $completed = (clone $todayQuery)->where('status', 'completed')->count();
+        $confirmed = (clone $todayQuery)->where('status', 'confirmed')->count();
+        $scheduled = (clone $todayQuery)->where('status', 'scheduled')->count();
+        $cancelled = (clone $todayQuery)->where('status', 'cancelled')->count();
+        $pending = (clone $todayQuery)->where('status', 'pending')->count();
+
+        return [
+            'total' => $total,
+            'completed' => $completed,
+            'confirmed' => $confirmed,
+            'scheduled' => $scheduled,
+            'upcoming' => $scheduled + $confirmed, // upcoming appointments
+            'cancelled' => $cancelled,
+            'pending' => $pending,
+        ];
     }
 
-    public function updatingType()
+    public function getTodayAppointments()
     {
-        $this->resetPage();
-    }
-
-    public function updatingStartDate()
-    {
-        $this->resetPage();
-    }
-
-    public function updatingEndDate()
-    {
-        $this->resetPage();
-    }
-
-    public function render()
-    {
-        $this->doctors = User::whereHas('doctorDetail')->get(['id', 'name']);
-
-        $appointments = Appointment::with(['patient', 'doctor'])
+        $today = Carbon::today();
+        
+        $query = Appointment::with(['patient', 'doctor'])
+            ->whereDate('scheduled_at', $today)
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->whereHas('patient', function ($q2) {
                         $q2->where('name', 'like', '%' . $this->search . '%');
-                    })->orWhereHas('doctor', function ($q2) {
+                    })
+                    ->orWhereHas('doctor', function ($q2) {
                         $q2->where('name', 'like', '%' . $this->search . '%');
                     });
                 });
             })
-            ->when($this->status && $this->status !== 'All Status', function($q) {
-                $q->where('status', $this->status);
+            // FIXED: Check for "All Status"
+            ->when(!empty($this->status) && $this->status !== 'All Status', function($query) {
+                $query->where('status', $this->status);
             })
-            ->when($this->doctor, function($q) {
-                $q->where('doctor_id', $this->doctor);
+            // FIXED: Check for empty string
+            ->when(!empty($this->doctor), function($query) {
+                $query->where('doctor_id', $this->doctor);
             })
-            ->when($this->type && $this->type !== 'All Types' && \Illuminate\Support\Facades\Schema::hasColumn('appointments', 'type'), function($q) {
-                $q->where('type', $this->type);
-            })
-            ->when($this->dateRange && $this->dateRange !== 'All', function($q) {
-                $today = now();
-                if ($this->dateRange === 'Today') {
-                    $q->whereDate('scheduled_at', $today->format('Y-m-d'));
-                } elseif ($this->dateRange === 'This Week') {
-                    $q->whereBetween('scheduled_at', [
-                        $today->copy()->startOfWeek()->startOfDay(),
-                        $today->copy()->endOfWeek()->endOfDay(),
-                    ]);
-                } elseif ($this->dateRange === 'This Month') {
-                    $q->whereBetween('scheduled_at', [
-                        $today->copy()->startOfMonth()->startOfDay(),
-                        $today->copy()->endOfMonth()->endOfDay(),
-                    ]);
-                } elseif ($this->dateRange === 'Custom Range') {
-                    if ($this->startDate && $this->endDate) {
-                        $q->whereBetween('scheduled_at', [
-                            \Carbon\Carbon::parse($this->startDate)->startOfDay(),
-                            \Carbon\Carbon::parse($this->endDate)->endOfDay(),
-                        ]);
+            // Check for "All Types" and map virtual vs in-person properly
+            ->when(!empty($this->type) && $this->type !== 'All Types', function($query) {
+                $typeVal = strtolower($this->type);
+                if (Schema::hasColumn('appointments', 'type')) {
+                    return $query->where('type', $typeVal === 'in-person' ? 'in_person' : $typeVal);
+                } elseif (Schema::hasColumn('appointments', 'appointment_time')) {
+                    if ($typeVal === 'virtual') {
+                        return $query->where('appointment_time', 'virtual');
                     }
+                    return $query->where(function($q) {
+                        $q->whereNull('appointment_time')->orWhere('appointment_time', '!=', 'virtual');
+                    });
                 }
+                return $query;
+            });
+
+        return $query->orderBy('scheduled_at', 'asc')->get();
+    }
+
+    public function resetFilters()
+    {
+        $this->reset(['search', 'dateRange', 'status', 'doctor', 'type', 'startDate', 'endDate']);
+        $this->resetPage();
+    }
+
+    public function searchAppointments()
+    {
+        // Explicit trigger for applying filters from the UI search button
+        $this->resetPage();
+    }
+
+    // Computed property helper for Blade: $hasActiveFilters
+    public function getHasActiveFiltersProperty()
+    {
+        $hasSearch = is_string($this->search) ? trim($this->search) !== '' : !empty($this->search);
+        $hasStatus = !empty($this->status) && $this->status !== 'All Status';
+        $hasDoctor = !empty($this->doctor);
+        $hasType = !empty($this->type) && $this->type !== 'All Types';
+        $hasDateRange = $this->dateRange && $this->dateRange !== 'All';
+        $hasCustomDates = !empty($this->startDate) || !empty($this->endDate);
+
+        return $hasSearch || $hasStatus || $hasDoctor || $hasType || $hasDateRange || $hasCustomDates;
+    }
+
+    public function render()
+    {
+        $this->doctors = User::whereHas('doctorDetail')
+            ->orWhere('role', 'doctor')
+            ->get(['id', 'name', 'email']);
+
+        $appointments = Appointment::with(['patient', 'doctor.doctorDetail'])
+            ->when(true, function($query) {
+                return $this->applyFilters($query);
             })
             ->orderBy('scheduled_at', 'desc')
             ->paginate(10);
 
-        // Stats for today
-        $today = now()->format('Y-m-d');
-        $todayStats = [
-            'total' => Appointment::whereDate('scheduled_at', $today)->count(),
-            'completed' => Appointment::whereDate('scheduled_at', $today)
-                ->where('status', 'completed')->count(),
-            'upcoming' => Appointment::whereDate('scheduled_at', $today)
-                ->whereIn('status', ['scheduled', 'confirmed'])->count(),
-            'cancelled' => Appointment::whereDate('scheduled_at', $today)
-                ->where('status', 'cancelled')->count(),
-        ];
-
-        // Today's appointments list
-        $todayAppointments = Appointment::with(['patient', 'doctor'])
-            ->whereDate('scheduled_at', $today)
-            ->orderBy('scheduled_at', 'asc')
-            ->get();
+        $todayStats = $this->calculateTodayStats();
+        $todayAppointments = $this->getTodayAppointments();
 
         return view('livewire.admin.appointments', [
             'appointments' => $appointments,
             'todayStats' => $todayStats,
             'todayAppointments' => $todayAppointments,
+            'hasActiveFilters' => $this->hasActiveFilters,
         ]);
     }
 }

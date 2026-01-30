@@ -319,6 +319,9 @@ class Reports extends Component
             $dataset['borderWidth'] = 2;
             $dataset['fill'] = $this->chartType === 'area';
             $dataset['tension'] = 0.4;
+            if (!isset($dataset['borderColor'])) {
+                $dataset['borderColor'] = $dataset['backgroundColor'] ?? 'rgba(0,0,0,1)';
+            }
             $dataset['pointBackgroundColor'] = $dataset['borderColor'];
             $dataset['pointRadius'] = 4;
             $dataset['pointHoverRadius'] = 6;
