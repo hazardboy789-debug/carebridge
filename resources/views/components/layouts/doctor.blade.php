@@ -106,18 +106,7 @@
                         </a>
                     </div>
                 </div>
-                <div class="flex flex-col gap-1">
-                    <div class="flex items-center gap-3 px-3 py-4 border-t border-border-light dark:border-border-dark">
-                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
-                            data-alt="Profile picture of Dr. Evelyn Reed"
-                            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAPyLJw3e-STCG-Z_O80E32_v6PZpysy71S1oSZahWCaDPPQmvcgI2t0gUj2Zrs9mZc37Qkvjq-vINlPqEmVzUN_TA36pmlmevEoz2tgIGY5cI3MriGJn0lQxDKPb_26F2nPz6-be5413GVSx6e1MTVRDeDgpC9AXz4sPxw53iRSaKl4L-kNXkJUbxSJl3uRQ0yHwUqig5sZkkhDpfh1pOixCpqMsnux06f4TcFD80t8P87irVbR-BWMQobLI6VPC5xNX2hdY2Z0w");'>
-                        </div>
-                        <div class="flex flex-col">
-                            <h1 class="text-text-light-primary dark:text-text-dark-primary text-sm font-semibold">Dr. Evelyn Reed</h1>
-                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs">Oncologist</p>
-                        </div>
-                    </div>
-                </div>
+                <!-- doctor profile removed as requested -->
             </div>
         </aside>
         <!-- Main Content -->

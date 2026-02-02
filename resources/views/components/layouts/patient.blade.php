@@ -147,20 +147,7 @@
                         </a>
                     </div>
                 </div>
-                <div class="flex flex-col gap-1">
-                    <div class="flex items-center gap-3 px-3 py-4 border-t border-border-light dark:border-border-dark">
-                        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
-                            data-alt="Profile picture of Maria Garcia"
-                            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBmoJ7zWljb-6oG8m3ruqHc_HJBrlj0SL-YJrRySRqzdiEOLUaC4dCutjq-IATLBJ9HMmYNf6wX0XVbROieBzLVfjzSdSqaXKckizUENhpVyCypmVQUW0n8qlyonn-6WFZ9tlfdZUcG8_apNL-YoCv5zsAIynHVuEwEdKaqpF_NkIePpngu2hMYNT7waE7Ws2B6J9kJxzmcYAicG_trQe760nCkKe6aJ8ZxBPc_6M_6D1J723zypAp2MjZW60fwqZoC_t-dxgyb0A");'>
-                        </div>
-                        <div class="flex flex-col">
-                            <h1 class="text-text-light-primary dark:text-text-dark-primary text-sm font-semibold">Maria
-                                Garcia</h1>
-                            <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs">Patient ID:
-                                789-123-456</p>
-                        </div>
-                    </div>
-                </div>
+                <!-- user profile removed as requested -->
             </div>
         </aside>
         <!-- Main Content -->
