@@ -271,6 +271,18 @@ class Appointments extends Component
         $this->resetPage();
     }
 
+    public function getStatusColor($status)
+    {
+        return match($status) {
+            'completed' => 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100',
+            'confirmed' => 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100',
+            'scheduled' => 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-100',
+            'pending' => 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100',
+            'cancelled' => 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100',
+            default => 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100',
+        };
+    }
+
     // Computed property helper for Blade: $hasActiveFilters
     public function getHasActiveFiltersProperty()
     {

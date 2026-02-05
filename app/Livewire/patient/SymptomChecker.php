@@ -23,7 +23,7 @@ class SymptomChecker extends Component
     public $recommendedSpecialty = '';
     public $recommendation = '';
     public $suggestedDoctors = [];
-    public $suggestedDoctor = null; // ADDED THIS
+    public $suggestedDoctor = null; 
     public $checkHistory = [];
     public $aiAnalysis = null;
     public $isAnalyzing = false;
@@ -349,7 +349,7 @@ class SymptomChecker extends Component
             'recommendedSpecialty',
             'recommendation',
             'suggestedDoctors',
-            'suggestedDoctor', // ADDED THIS
+            'suggestedDoctor', 
             'aiAnalysis'
         ]);
     }
