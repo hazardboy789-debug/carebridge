@@ -40,6 +40,10 @@ class Profile extends Component
     public $dob;
     public $gender;
     public $photo;
+    public $appointmentDuration = 30;
+    public $workingDays = [];
+    public $startTime;
+    public $endTime;
 
     public function mount()
     {
@@ -78,10 +82,10 @@ class Profile extends Component
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users')->ignore($this->user->id)],
             'contact' => 'nullable|string|max:20',
-            'specialization' => 'required|string|max:255',
-            'license_number' => 'required|string|max:100',
-            'experience_years' => 'required|integer|min:0',
-            'qualification' => 'required|string|max:255',
+            'specialization' => 'nullable|string|max:255',
+            'license_number' => 'nullable|string|max:100',
+            'experience_years' => 'nullable|integer|min:0',
+            'qualification' => 'nullable|string|max:255',
             'consultationFee' => 'nullable|numeric|min:0',
             'bio' => 'nullable|string|max:1000',
             'address' => 'nullable|string|max:500',

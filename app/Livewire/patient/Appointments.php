@@ -249,9 +249,10 @@ class Appointments extends Component
             if (method_exists($this, 'loadPatientWalletBalance')) {
                 $this->loadPatientWalletBalance();
             }
-            // Dispatch a browser event so frontend listeners can react as well
-            if (method_exists($this, 'dispatchBrowserEvent')) {
-                $this->dispatchBrowserEvent('appointmentBooked', ['appointmentId' => $appointment->id ?? null]);
+            // Force a Livewire re-render so the new appointment appears immediately
+            if (method_exists($this, 'dispatch')) {
+                $this->dispatch('appointmentBooked');
+                $this->dispatch('$refresh');
             }
         } catch (\Exception $e) {
             DB::rollBack();

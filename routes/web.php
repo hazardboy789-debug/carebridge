@@ -61,7 +61,7 @@ Route::get('/appointment', ApointmentPage::class)->name('appointment');
 
 /*
 |--------------------------------------------------------------------------
-| Authentication Routes (Fixed Version)
+| Authentication Routes 
 |--------------------------------------------------------------------------
 */
 
