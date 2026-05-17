@@ -8,6 +8,12 @@ return new class extends Migration
 {
     public function up()
     {
+        // Guard: pharmacies table may not exist yet when running migrate:fresh
+        // These columns are included in create_pharmacies_table migration directly.
+        if (!Schema::hasTable('pharmacies')) {
+            return;
+        }
+
         Schema::table('pharmacies', function (Blueprint $table) {
             if (!Schema::hasColumn('pharmacies', 'owner_name')) {
                 $table->string('owner_name')->nullable()->after('name');

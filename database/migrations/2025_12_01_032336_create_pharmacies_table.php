@@ -11,11 +11,18 @@ return new class extends Migration
         Schema::create('pharmacies', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('owner_name')->nullable();
             $table->text('address');
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
+            $table->time('opening_time')->nullable();
+            $table->time('closing_time')->nullable();
+            $table->boolean('is_24_hours')->default(false);
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->string('license_number')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->enum('status', ['pending', 'approved', 'rejected', 'suspended'])->default('approved');
             $table->timestamps();
         });
 

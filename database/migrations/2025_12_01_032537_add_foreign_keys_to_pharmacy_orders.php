@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('pharmacy_orders', function (Blueprint $table) {
             // Add foreign key constraint after pharmacies table exists
-            $table->foreign('pharmacy_id')->references('id')->on('pharmacies');
+            $table->foreign('pharmacy_id')->references('id')->on('pharmacies')->onDelete('cascade');
         });
     }
 

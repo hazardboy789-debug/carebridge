@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('pharmacy_orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('pharmacy_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('pharmacy_id')->nullable();
             $table->string('order_number')->unique();
             $table->decimal('total_amount', 10, 2);
             $table->string('status')->default('pending');

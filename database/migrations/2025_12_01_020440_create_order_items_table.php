@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained('pharmacy_orders')->onDelete('cascade');
-            $table->foreignId('medicine_id')->constrained('medicine_stocks')->onDelete('cascade');
+            $table->unsignedBigInteger('order_id');
+            $table->unsignedBigInteger('medicine_id')->nullable();
             $table->string('medicine_name'); // Store name separately in case medicine is deleted
             $table->integer('quantity');
             $table->decimal('unit_price', 10, 2);
