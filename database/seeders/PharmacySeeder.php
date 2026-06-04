@@ -42,7 +42,10 @@ class PharmacySeeder extends Seeder
         ];
 
         foreach ($pharmacies as $pharmacy) {
-            Pharmacy::create($pharmacy);
+            Pharmacy::updateOrCreate(
+                ['email' => $pharmacy['email']],
+                $pharmacy
+            );
         }
 
         $this->command->info('Pharmacies seeded successfully!');

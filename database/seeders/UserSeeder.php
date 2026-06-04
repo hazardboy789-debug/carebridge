@@ -25,13 +25,15 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // Create Admin User
-        User::create([
-            'name' => 'Admin',
-            'email' => 'admin@gmail.com',
-            'password' => Hash::make('admin@1213'),
-            'role' => 'admin',
-            'contact' => '0717894272',
-        ]);
+        // Create or update Admin User
+        User::updateOrCreate(
+            ['email' => 'admin@gmail.com'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('admin@1213'),
+                'role' => 'admin',
+                'contact' => '0717894272',
+            ]
+        );
     }
 }
