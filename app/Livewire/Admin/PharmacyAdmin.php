@@ -174,6 +174,22 @@ class PharmacyAdmin extends Component
         $this->selectedPharmacy = null;
     }
 
+    public function closePharmacy()
+    {
+        $this->selectedPharmacy = null;
+    }
+
+    public function closeOrders()
+    {
+        $this->showOrders = false;
+        $this->orders = [];
+    }
+
+    public function closeAddPharmacyForm()
+    {
+        $this->showAddPharmacyForm = false;
+    }
+
     private function resetMedicineForm()
     {
         $this->medicineName = '';
