@@ -129,6 +129,18 @@
                                 class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">
                                 Wallet</p>
                         </a>
+                        <!-- New Vital Tracker -->
+                        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 group"
+                            href="{{ route('patient.vitals-tracker') }}">
+                            <span
+                                class="material-symbols-outlined text-text-light-secondary dark:text-text-dark-secondary group-hover:text-primary text-2xl">
+                                monitoring
+                            </span>
+                            <p
+                                class="text-text-light-primary dark:text-text-dark-primary group-hover:text-primary text-sm font-medium">
+                                Vitals Tracker
+                            </p>
+                        </a>
                         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 group"
                             href="{{ route('patient.pharmacy') }}">
                             <span

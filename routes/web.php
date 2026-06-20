@@ -28,6 +28,7 @@ use App\Livewire\Patient\Chat;
 use App\Livewire\Patient\PatientWallet;
 use App\Livewire\Patient\PatientPharmacy;
 use App\Livewire\Patient\EmergencyAssistance;
+use App\Livewire\Patient\VitalsTracker;
 
 // Doctor
 use App\Livewire\Doctor\Dashboard;
@@ -195,6 +196,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/wallet', PatientWallet::class)->name('wallet');
         Route::get('/pharmacy', PatientPharmacy::class)->name('pharmacy');
         Route::get('/emergency', EmergencyAssistance::class)->name('emergency');
+        // NEW
+        Route::get('/vitals-tracker', VitalsTracker::class)
+            ->name('vitals-tracker');
     });
 
     /*

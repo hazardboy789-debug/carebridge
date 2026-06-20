@@ -57,6 +57,14 @@ class User extends Authenticatable
      |------------------------------ */
 
     /**
+     * User's health vitals (one-to-many)
+     */
+    public function healthVitals()
+    {
+        return $this->hasMany(HealthVital::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
      * User details (one-to-one) - for user profile information
      */
     public function userDetails()
