@@ -14,6 +14,7 @@ class VitalsTracker extends Component
 
     protected $paginationTheme = 'tailwind';
 
+    // Form fields
     public $blood_pressure_systolic;
     public $blood_pressure_diastolic;
     public $heart_rate;
@@ -22,36 +23,29 @@ class VitalsTracker extends Component
     public $weight;
     public $notes;
 
-    protected $rules = [
-        'blood_pressure_systolic' => 'nullable|integer',
-        'blood_pressure_diastolic' => 'nullable|integer',
-        'heart_rate' => 'nullable|integer',
-        'blood_sugar' => 'nullable|numeric',
-        'temperature' => 'nullable|numeric',
-        'weight' => 'nullable|numeric',
-        'notes' => 'nullable|string|max:500',
-    ];
+    protected function rules()
+    {
+        return [
+            'blood_pressure_systolic' => 'nullable|integer|between:70,250',
+            'blood_pressure_diastolic' => 'nullable|integer|between:40,160',
+            'heart_rate' => 'nullable|integer|between:20,220',
+            'blood_sugar' => 'nullable|numeric|between:30,600',
+            'temperature' => 'nullable|numeric|between:32,43',
+            'weight' => 'nullable|numeric|between:1,350',
+            'notes' => 'nullable|string|max:500',
+        ];
+    }
 
     public function save()
     {
         $this->validate();
 
-        // ensure user exists
-        if (!auth()->check()) {
-            session()->flash('error', 'User not logged in');
-            return;
-        }
+        // Ensure at least one vital is provided
+        $hasVital = $this->blood_pressure_systolic || $this->blood_pressure_diastolic ||
+                    $this->heart_rate || $this->blood_sugar || $this->temperature || $this->weight;
 
-        // at least one value required
-        if (
-            !$this->blood_pressure_systolic &&
-            !$this->blood_pressure_diastolic &&
-            !$this->heart_rate &&
-            !$this->blood_sugar &&
-            !$this->temperature &&
-            !$this->weight
-        ) {
-            $this->addError('vitals_empty', 'Enter at least one vital');
+        if (!$hasVital) {
+            $this->addError('vitals_empty', 'Enter at least one vital sign.');
             return;
         }
 
@@ -66,7 +60,8 @@ class VitalsTracker extends Component
             'notes' => $this->notes,
         ]);
 
-        $this->reset();
+        $this->reset(['blood_pressure_systolic', 'blood_pressure_diastolic', 'heart_rate',
+                      'blood_sugar', 'temperature', 'weight', 'notes']);
         $this->resetPage();
 
         session()->flash('success', 'Vitals saved successfully!');
@@ -78,23 +73,23 @@ class VitalsTracker extends Component
             ->where('user_id', auth()->id())
             ->delete();
 
-        session()->flash('success', 'Deleted successfully');
+        session()->flash('success', 'Record deleted successfully.');
         $this->resetPage();
     }
 
     public function render()
     {
-    $vitals = HealthVital::where('user_id', auth()->id())
-        ->latest()
-        ->paginate(10);
+        $vitals = HealthVital::where('user_id', auth()->id())
+            ->latest()
+            ->paginate(10);
 
-    $latest = HealthVital::where('user_id', auth()->id())
-        ->latest()
-        ->first();
+        $latest = HealthVital::where('user_id', auth()->id())
+            ->latest()
+            ->first();
 
-    return view('livewire.patient.vitals-tracker', [
-        'vitals' => $vitals,
-        'latest' => $latest,
-     ]);
+        return view('livewire.patient.vitals-tracker', [
+            'vitals' => $vitals,
+            'latest' => $latest,
+        ]);
     }
 }
